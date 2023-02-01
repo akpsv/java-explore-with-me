@@ -1,10 +1,10 @@
-package ru.akpsv.statclient;
+package ru.akpsv.dto.main;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class StatClientApplicationTests {
+class MainApplicationTests {
 
     @Test
     void contextLoads() {

@@ -1,4 +1,4 @@
-package ru.akpsv.main;
+package ru.akpsv.dto.main;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

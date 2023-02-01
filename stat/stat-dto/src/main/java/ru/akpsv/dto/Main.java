@@ -1,4 +1,4 @@
-package ru.akpsv;
+package ru.akpsv.dto;
 
 public class Main {
     public static void main(String[] args) {

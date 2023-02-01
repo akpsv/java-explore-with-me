@@ -12,6 +12,12 @@
 
     <groupId>ru.akpsv</groupId>
     <artifactId>stat-dto</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+    </dependencies>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
