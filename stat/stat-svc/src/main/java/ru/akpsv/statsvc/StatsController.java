@@ -7,6 +7,13 @@ import org.springframework.web.bind.annotation.*;
 import ru.akpsv.dto.RequestDtoIn;
 import ru.akpsv.dto.StatDtoOut;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
+
 @RequiredArgsConstructor
 @RestController
 public class StatsController {
@@ -28,11 +35,22 @@ public class StatsController {
      * (например используя java.net.URLEncoder.encode)
      * */
     @GetMapping("/stats")
-    public StatDtoOut get(@RequestParam String start,
-                          @RequestParam String end,
-                          @RequestParam String[] uris,
-                          @RequestParam boolean unique) {
-        return null;
+    public List<StatDtoOut> get(@RequestParam String start,
+                                @RequestParam String end,
+                                @RequestParam String[] uris,
+                                @RequestParam boolean unique) throws UnsupportedEncodingException {
+        LocalDateTime startDateTime = decodeParamToLocalDateTime(start);
+        LocalDateTime endDateTime = decodeParamToLocalDateTime(end);
+
+        Optional<List<StatDtoOut>> statDtoByParameters = statsService.getStatDtoByParameters(startDateTime, endDateTime, uris, unique);
+        return statDtoByParameters.get();
+    }
+
+    private LocalDateTime decodeParamToLocalDateTime(String start) throws UnsupportedEncodingException {
+        String startDateTime = URLDecoder.decode(start, "UTF-8");
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime startDate = LocalDateTime.parse(startDateTime,dateTimeFormatter);
+        return startDate;
     }
 
 }

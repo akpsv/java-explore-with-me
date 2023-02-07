@@ -2,11 +2,22 @@ package ru.akpsv.statsvc;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import ru.akpsv.TestHelper;
+import ru.akpsv.dto.StatDtoOut;
 import ru.akpsv.statsvc.model.Request;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
@@ -17,11 +28,40 @@ class StatsRepositoryTest {
     @Test
     void save_RequestWithoutId_ReutrnsRequestWithId() {
         //Подготовка
-        Request request = TestHelper.createRequest(0L);
+        Request request = TestHelper.createRequest(0L, "http://test.server.ru/endpoint", "192.168.1.1");
         //Действия
         long actualRequestId = statsRepository.save(request).getId();
         //Проверка
         assertNotEquals(0, actualRequestId);
 
+    }
+
+    @PersistenceContext
+    EntityManager entityManager;
+    @ParameterizedTest
+    @CsvSource({"false, 3", "true, 2"})
+    void getByParameters_IsIpInuque_ReturnsCorrectHitsIntoStatDtoOut(String isIpUnique, String expectedQuantity) {
+        //Подготовка
+        boolean uniqueIp = Boolean.parseBoolean(isIpUnique);
+
+        long expectedQuantityOfHits = Long.parseLong(expectedQuantity);
+        Request request1 = TestHelper.createRequest(0L, "http://test.server.ru/endpoint1", "192.168.1.1");
+        Request request2 = TestHelper.createRequest(0L, "http://test.server.ru/endpoint1", "192.168.1.1");
+        Request request3 = TestHelper.createRequest(0L, "http://test.server.ru/endpoint1", "192.168.1.2");
+        statsRepository.save(request1);
+        statsRepository.save(request2);
+        statsRepository.save(request3);
+        String[] arrayOfUri = {request1.getUri(), request3.getUri()};
+
+        //Действия
+        List<StatDtoOut> resultStatDtoOuts = statsRepository.getStatDtoByParameters(entityManager,
+                LocalDateTime.now().minusHours(1L),
+                LocalDateTime.now().plusHours(1L),
+                arrayOfUri,
+                uniqueIp)
+                .get();
+
+        //Проверка
+        org.hamcrest.MatcherAssert.assertThat(resultStatDtoOuts.get(0).getHits(), equalTo(expectedQuantityOfHits));
     }
 }

@@ -13,5 +13,5 @@ public class StatDtoOut {
     //URI сервиса
     private String uri;
     //Количество просмотров
-    private Long hits;
+    private long hits;
 }

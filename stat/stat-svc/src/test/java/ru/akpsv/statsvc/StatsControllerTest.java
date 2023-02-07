@@ -1,7 +1,7 @@
 package ru.akpsv.statsvc;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,20 +15,23 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.akpsv.TestHelper;
 import ru.akpsv.dto.RequestDtoIn;
+import ru.akpsv.dto.StatDtoOut;
 import ru.akpsv.statsvc.model.Request;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class StatsControllerTest {
     @Mock
-    private StatsService statsService;
+    private StatsService stubStatsService;
 
     @InjectMocks
     private StatsController statsController;
@@ -47,22 +50,42 @@ class StatsControllerTest {
     @Test
     void saveRequestInfo_RequestDtoIn_ReturnsHttpCode201() throws Exception {
         //Подготовка
-        Request request = TestHelper.createRequest(1L);
+        Request request = TestHelper.createRequest(1L, "http://test.server.ru/endpoint", "192.168.1.1");
         RequestDtoIn requestDtoIn = TestHelper.createRequestDtoIn();
 
-        Mockito.when(statsService.save(Mockito.any())).thenReturn(Optional.of(request));
+        when(stubStatsService.save(Mockito.any())).thenReturn(Optional.of(request));
 
         //Действия
         //Проверка
         mvc.perform(post("/hit")
-                .content(mapper.writeValueAsString(requestDtoIn))
-                .characterEncoding(StandardCharsets.UTF_8)
-                .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isCreated());
+                        .content(mapper.writeValueAsString(requestDtoIn))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isCreated());
     }
 
     @Test
-    void get() {
+    void get_WhenCall_ReturnsListOfStatDtoOut() throws Exception {
+        //Подготовка
+        StatDtoOut statDtoOut = TestHelper.createStatDtoOut("http://test.server.ru/endpoint", 3);
+        List<StatDtoOut> statDtoOuts = new ArrayList<>();
+        statDtoOuts.add(statDtoOut);
+        String[] uris = {"http://test.server.ru/endpoint"};
+
+        when(stubStatsService.getStatDtoByParameters(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean()))
+                .thenReturn(Optional.of(statDtoOuts));
+
+        //Действия
+//        List<StatDtoOut> statDtoOuts1 = statsController.get("2022-02-05 11:00:23", "2022-03-05 11:00:23", uris, false);
+        //Проверка
+//        org.hamcrest.MatcherAssert.assertThat(statDtoOuts1.get(0), Matchers.samePropertyValuesAs(statDtoOuts.get(0)));
+        mvc.perform(get("/stats")
+                        .param("start", "2022-02-05 11:00:23")
+                        .param("end", "2022-03-05 11:00:23")
+                        .param("uris", uris)
+                        .param("unique", "false"))
+                .andExpect(status().isOk());
     }
 }
