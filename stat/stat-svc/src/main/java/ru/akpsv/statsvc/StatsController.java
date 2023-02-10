@@ -38,7 +38,7 @@ public class StatsController {
     public List<StatDtoOut> get(@RequestParam String start,
                                 @RequestParam String end,
                                 @RequestParam String[] uris,
-                                @RequestParam boolean unique) throws UnsupportedEncodingException {
+                                @RequestParam(defaultValue = "false") boolean unique) throws UnsupportedEncodingException {
         LocalDateTime startDateTime = decodeParamToLocalDateTime(start);
         LocalDateTime endDateTime = decodeParamToLocalDateTime(end);
 

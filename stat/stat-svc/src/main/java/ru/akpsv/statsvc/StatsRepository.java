@@ -14,6 +14,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -51,6 +52,7 @@ public interface StatsRepository extends JpaRepository<Request, Long> {
 
         List<StatDtoOut> listStatDtos = resultList.stream()
                 .map(tuple -> new StatDtoOut((String) tuple.get(0), (String) tuple.get(1), (Long) tuple.get(2)))
+                .sorted(Comparator.comparingLong(StatDtoOut::getHits).reversed())
                 .collect(Collectors.toList());
         return Optional.of(listStatDtos);
     }
