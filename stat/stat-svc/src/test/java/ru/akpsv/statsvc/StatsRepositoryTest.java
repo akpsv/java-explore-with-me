@@ -12,13 +12,11 @@ import ru.akpsv.statsvc.model.Request;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @DataJpaTest
@@ -38,6 +36,7 @@ class StatsRepositoryTest {
 
     @PersistenceContext
     EntityManager entityManager;
+
     @ParameterizedTest
     @CsvSource({"false, 3", "true, 2"})
     void getByParameters_IsIpInuque_ReturnsCorrectHitsIntoStatDtoOut(String isIpUnique, String expectedQuantity) {
@@ -55,10 +54,10 @@ class StatsRepositoryTest {
 
         //Действия
         List<StatDtoOut> resultStatDtoOuts = statsRepository.getStatDtoByParameters(entityManager,
-                LocalDateTime.now().minusHours(1L),
-                LocalDateTime.now().plusHours(1L),
-                arrayOfUri,
-                uniqueIp)
+                        LocalDateTime.now().minusHours(1L),
+                        LocalDateTime.now().plusHours(1L),
+                        arrayOfUri,
+                        uniqueIp)
                 .get();
 
         //Проверка

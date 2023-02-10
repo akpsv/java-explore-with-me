@@ -3,12 +3,11 @@ package ru.akpsv.statsvc.model;
 import lombok.*;
 
 import javax.persistence.*;
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 /**
-Содержит информацию об отдельном запросе
-*/
+ * Содержит информацию об отдельном запросе
+ */
 @Getter
 @Setter
 @NoArgsConstructor

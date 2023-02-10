@@ -7,7 +7,7 @@ import ru.akpsv.statsvc.model.Request;
 import java.time.LocalDateTime;
 
 public class TestHelper {
-    public static Request createRequest(long id, String uri, String ip){
+    public static Request createRequest(long id, String uri, String ip) {
         return Request.builder()
                 .id(id)
                 .app("TestApp")
@@ -16,7 +16,8 @@ public class TestHelper {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
-    public static RequestDtoIn createRequestDtoIn(){
+
+    public static RequestDtoIn createRequestDtoIn() {
         return RequestDtoIn.builder()
                 .app("TestApp")
                 .uri("http://test.server.ru/endpoint")
@@ -25,7 +26,7 @@ public class TestHelper {
                 .build();
     }
 
-    public static StatDtoOut createStatDtoOut(String uri,long hits){
+    public static StatDtoOut createStatDtoOut(String uri, long hits) {
         return StatDtoOut.builder()
                 .app("TestApp")
                 .uri(uri)

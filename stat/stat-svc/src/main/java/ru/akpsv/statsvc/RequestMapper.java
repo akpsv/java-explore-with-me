@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class RequestMapper {
-    public static Request toRequest(RequestDtoIn requestDtoIn){
+    public static Request toRequest(RequestDtoIn requestDtoIn) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return Request.builder()
                 .app(requestDtoIn.getApp())

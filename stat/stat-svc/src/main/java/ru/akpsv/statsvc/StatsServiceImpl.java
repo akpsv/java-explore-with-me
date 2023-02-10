@@ -1,6 +1,5 @@
 package ru.akpsv.statsvc;
 
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.akpsv.dto.StatDtoOut;
@@ -14,11 +13,12 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
-public class StatsServiceImpl implements StatsService{
+public class StatsServiceImpl implements StatsService {
     private final StatsRepository statsRepository;
 
     @PersistenceContext
     private final EntityManager entityManager;
+
     @Override
     public Optional<Request> save(Request request) {
         return Optional.of(statsRepository.save(request));

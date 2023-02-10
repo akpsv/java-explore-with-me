@@ -2,8 +2,6 @@ package ru.akpsv.dto;
 
 import lombok.*;
 
-import java.time.Instant;
-
 @Getter
 @Setter
 @NoArgsConstructor

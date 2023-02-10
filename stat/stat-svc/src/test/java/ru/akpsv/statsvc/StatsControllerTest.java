@@ -1,7 +1,6 @@
 package ru.akpsv.statsvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +10,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.akpsv.TestHelper;
 import ru.akpsv.dto.RequestDtoIn;
@@ -78,9 +76,7 @@ class StatsControllerTest {
                 .thenReturn(Optional.of(statDtoOuts));
 
         //Действия
-//        List<StatDtoOut> statDtoOuts1 = statsController.get("2022-02-05 11:00:23", "2022-03-05 11:00:23", uris, false);
         //Проверка
-//        org.hamcrest.MatcherAssert.assertThat(statDtoOuts1.get(0), Matchers.samePropertyValuesAs(statDtoOuts.get(0)));
         mvc.perform(get("/stats")
                         .param("start", "2022-02-05 11:00:23")
                         .param("end", "2022-03-05 11:00:23")
