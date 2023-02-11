@@ -25,7 +25,7 @@ public class StatsController {
      * */
     @PostMapping("/hit")
     public ResponseEntity saveRequestInfo(@RequestBody RequestDtoIn requestDtoIn) {
-        statsService.save(RequestMapper.toRequest(requestDtoIn)).get();
+        statsService.save(requestDtoIn);
         return new ResponseEntity(HttpStatus.valueOf(201));
     }
 
@@ -38,19 +38,21 @@ public class StatsController {
     public List<StatDtoOut> get(@RequestParam String start,
                                 @RequestParam String end,
                                 @RequestParam String[] uris,
-                                @RequestParam(defaultValue = "false") boolean unique) throws UnsupportedEncodingException {
+                                @RequestParam(defaultValue = "false") boolean unique) {
         LocalDateTime startDateTime = decodeParamToLocalDateTime(start);
         LocalDateTime endDateTime = decodeParamToLocalDateTime(end);
-
         Optional<List<StatDtoOut>> statDtoByParameters = statsService.getStatDtoByParameters(startDateTime, endDateTime, uris, unique);
         return statDtoByParameters.get();
     }
 
-    private LocalDateTime decodeParamToLocalDateTime(String start) throws UnsupportedEncodingException {
-        String startDateTime = URLDecoder.decode(start, "UTF-8");
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime startDate = LocalDateTime.parse(startDateTime,dateTimeFormatter);
-        return startDate;
+    private LocalDateTime decodeParamToLocalDateTime(String dateTime) throws StringOfDateTimeDecodeException {
+        try {
+            String decodedDateTime = URLDecoder.decode(dateTime, "UTF-8");
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime startDate = LocalDateTime.parse(decodedDateTime, dateTimeFormatter);
+            return startDate;
+        } catch (UnsupportedEncodingException e) {
+            throw new StringOfDateTimeDecodeException("Строка представляющая время не может быть декодирована");
+        }
     }
-
 }

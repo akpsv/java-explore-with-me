@@ -7,13 +7,12 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import ru.akpsv.TestHelper;
-import ru.akpsv.dto.StatDtoOut;
 import ru.akpsv.statsvc.model.Request;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -53,7 +52,7 @@ class StatsRepositoryTest {
         String[] arrayOfUri = {request1.getUri(), request3.getUri()};
 
         //Действия
-        List<StatDtoOut> resultStatDtoOuts = statsRepository.getStatDtoByParameters(entityManager,
+        Map<Request, Long> resultStatDtoOuts = statsRepository.getStatDtoByParameters(entityManager,
                         LocalDateTime.now().minusHours(1L),
                         LocalDateTime.now().plusHours(1L),
                         arrayOfUri,
@@ -61,6 +60,6 @@ class StatsRepositoryTest {
                 .get();
 
         //Проверка
-        org.hamcrest.MatcherAssert.assertThat(resultStatDtoOuts.get(0).getHits(), equalTo(expectedQuantityOfHits));
+        org.hamcrest.MatcherAssert.assertThat(resultStatDtoOuts.entrySet().iterator().next().getValue(), equalTo(expectedQuantityOfHits));
     }
 }

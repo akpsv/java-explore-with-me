@@ -2,7 +2,6 @@ package ru.akpsv.statsvc;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ru.akpsv.dto.StatDtoOut;
 import ru.akpsv.statsvc.model.Request;
 import ru.akpsv.statsvc.model.Request_;
 
@@ -14,10 +13,10 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
-import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public interface StatsRepository extends JpaRepository<Request, Long> {
@@ -28,10 +27,10 @@ public interface StatsRepository extends JpaRepository<Request, Long> {
      * @param uris          - Список uri для которых нужно выгрузить статистику
      * @param unique        -  Нужно ли учитывать только уникальные посещения (только с уникальным ip)
      *                      Default value : false
-     * @return - список подходящих запросов
+     * @return - сопоставление подходящих запросов и их количества
      */
-    default Optional<List<StatDtoOut>> getStatDtoByParameters(EntityManager entityManager, LocalDateTime startDateTime,
-                                                              LocalDateTime endDateTime, String[] uris, boolean unique) {
+    default Optional<Map<Request, Long>> getStatDtoByParameters(EntityManager entityManager, LocalDateTime startDateTime,
+                                                                LocalDateTime endDateTime, String[] uris, boolean unique) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
         Root<Request> fromRequests = cq.from(Request.class);
@@ -49,11 +48,17 @@ public interface StatsRepository extends JpaRepository<Request, Long> {
         }
         TypedQuery<Tuple> query = entityManager.createQuery(cq);
         List<Tuple> resultList = query.getResultList();
+        Map<Request, Long> result = new HashMap<>();
 
-        List<StatDtoOut> listStatDtos = resultList.stream()
-                .map(tuple -> new StatDtoOut((String) tuple.get(0), (String) tuple.get(1), (Long) tuple.get(2)))
-                .sorted(Comparator.comparingLong(StatDtoOut::getHits).reversed())
-                .collect(Collectors.toList());
-        return Optional.of(listStatDtos);
+        resultList.stream()
+                .forEach(tuple -> {
+                    Request request = Request.builder()
+                            .app((String) tuple.get(0))
+                            .uri((String) tuple.get(1))
+                            .build();
+                    result.put(request, (Long) tuple.get(2));
+                });
+
+        return Optional.of(result);
     }
 }

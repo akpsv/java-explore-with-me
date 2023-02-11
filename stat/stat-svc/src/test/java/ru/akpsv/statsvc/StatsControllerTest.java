@@ -51,8 +51,6 @@ class StatsControllerTest {
         Request request = TestHelper.createRequest(1L, "http://test.server.ru/endpoint", "192.168.1.1");
         RequestDtoIn requestDtoIn = TestHelper.createRequestDtoIn();
 
-        when(stubStatsService.save(Mockito.any())).thenReturn(Optional.of(request));
-
         //Действия
         //Проверка
         mvc.perform(post("/hit")
