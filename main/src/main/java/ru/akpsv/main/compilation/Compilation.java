@@ -1,5 +1,7 @@
 package ru.akpsv.main.compilation;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import ru.akpsv.main.event.model.Event;
 
 import javax.persistence.*;
@@ -7,6 +9,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "compilations")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Compilation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,5 +21,5 @@ public class Compilation {
     @Column(name = "pinned")
     private boolean pinned;
     //TODO: доделать в соовтетствии с заданием возможно многие ко многим
-    private List<Event> events;
+//    private List<Event> events;
 }

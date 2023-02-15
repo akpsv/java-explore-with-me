@@ -1,8 +1,12 @@
 package ru.akpsv.main.event.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.*;
 
+import javax.persistence.*;
+
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class Location {

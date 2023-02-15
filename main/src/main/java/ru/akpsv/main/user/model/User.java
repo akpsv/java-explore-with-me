@@ -1,4 +1,4 @@
-package ru.akpsv.main.user;
+package ru.akpsv.main.user.model;
 
 import lombok.*;
 
@@ -15,7 +15,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private long id;
+    private Long id;
     @Column(name = "name")
     private String name;
     @Column(name = "email")

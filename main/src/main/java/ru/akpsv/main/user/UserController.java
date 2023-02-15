@@ -1,7 +1,11 @@
 package ru.akpsv.main.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.akpsv.main.user.dto.NewUserRequest;
+import ru.akpsv.main.user.dto.UserDto;
+import ru.akpsv.main.user.model.User;
 
 import java.util.List;
 
@@ -12,16 +16,20 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public User createUser(@RequestBody User user){
-        return userService.create(user).get();
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserDto createUser(@RequestBody NewUserRequest newUser){
+        return userService.create(newUser).get();
     }
 
     @GetMapping
-    public List<User> getUsers(){
-        return userService.get().get();
+    public List<User> getUsersByIds(@RequestParam Long[] ids,
+                               @RequestParam(defaultValue = "0") Integer from,
+                               @RequestParam(defaultValue = "10") Integer size){
+        return userService.getUsersByIds(ids, from, size).get();
     }
     @DeleteMapping("/{userId}")
-    public void deleteUserById(@RequestParam int userId){
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUserById(@PathVariable Long userId){
         userService.deleteById(userId);
     }
 }

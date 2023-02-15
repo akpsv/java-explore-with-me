@@ -1,21 +1,20 @@
 package ru.akpsv.main.user.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+
 @Getter
 @Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class UserDto {
-    private Long id;
+public class NewUserRequest {
+    //Данные нового пользователя
     @NotBlank
-    private String name;
+    private String name;    //Имя
     @Email
     @NotBlank
-    private String email;
+    private String email;   //Почтовый адрес
 }
