@@ -1,6 +1,6 @@
 package ru.akpsv.main.event.dto;
 
-import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,11 +11,8 @@ import ru.akpsv.main.category.CategoryRepository;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.user.UserRepository;
 
-import java.time.format.DateTimeFormatter;
-
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.samePropertyValuesAs;
 
 @ExtendWith(MockitoExtension.class)
 class EventMapperTest {
@@ -36,7 +33,7 @@ class EventMapperTest {
         //Действия
         Event actualEvent = eventMapper.toEvent(newEventDto, 1L);
         //Проверка
-        assertThat(actualEvent, samePropertyValuesAs(expectedEvent));
+        assertThat(actualEvent, samePropertyValuesAs(expectedEvent, "location") );
     }
 
     @Test

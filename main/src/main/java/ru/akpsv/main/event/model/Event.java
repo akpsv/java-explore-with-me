@@ -5,6 +5,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.LocalDateTime;
 
@@ -25,42 +26,34 @@ public class Event {
     private String annotation;      //Краткое описание
     @Column(name = "description")
     private String description;     //Полное описание события
-    @NotBlank
+    @NotNull
     @Column(name = "initiator_id")
     private Long initiatorId; //Пользователь (краткая информация) TODO:(Заполняется eventMapper.toEvent())
 
-    @NotBlank
+    @NotNull
     @Column(name = "category_id")
     private Long categoryId;
 
     @Column(name = "confirmed_requests")
-    private Long confirmedRequests; //Количество одобренных заявок на участие в данном событии TODO:(Заполняется в процессе работы)
+    private Long confirmedRequests ; //Количество одобренных заявок на участие в данном событии TODO:(Заполняется в процессе работы)
 
-    @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp
     @Column(name = "created_on")
-    private String createdOn;       //Дата и время создания события (в формате "yyyy-MM-dd HH:mm:ss") TODO:(Заполняется базой при сохранении)
+    private LocalDateTime createdOn;       //Дата и время создания события (в формате "yyyy-MM-dd HH:mm:ss") TODO:(Заполняется базой при сохранении)
 
-    @NotBlank
+    @NotNull
     @Column(name = "event_date")
-    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime eventDate;       //Дата и время на которые намечено событие (в формате "yyyy-MM-dd HH:mm:ss")
 
-    @NotBlank
-    @Column(name = "location_longitude")
-    private Double locationLongitude;
-    @NotBlank
-    @Column(name = "location_latitude")
-    private Double locationLatitude;
+    @NotNull
+    private Location location;
 
-    @NotBlank
     @Column(name = "paid")
     private Boolean paid;           //Нужно ли оплачивать участие
 
     @Column(name = "participant_limit")
     private Integer participantLimit;//Ограничение на количество участников. Значение 0 - означает отсутствие ограничения
 
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "published_on")
     private LocalDateTime publishedOn;     //Дата и время публикации события (в формате "yyyy-MM-dd HH:mm:ss") TODO:(Заполняестя во время работы)
 

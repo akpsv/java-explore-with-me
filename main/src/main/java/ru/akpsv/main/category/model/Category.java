@@ -16,6 +16,7 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "category_id")
     private Long id;        //Идентификатор категории
+
     @Column(name = "name")
     private String name;    //Название категории
 }

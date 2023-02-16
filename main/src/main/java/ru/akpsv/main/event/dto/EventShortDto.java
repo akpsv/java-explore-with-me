@@ -9,12 +9,13 @@ import ru.akpsv.main.user.dto.UserShortDto;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class EventShortDto {
-    private int id;
+    private Long id;
     private String annotation;
     private CategoryDto category;
-    private int confirmedRequests;
+    private Long confirmedRequests;
+    private String eventDate;
     private UserShortDto initiator;
     private boolean paid;
     private String title;
-    private int views;
+    private Long views;
 }

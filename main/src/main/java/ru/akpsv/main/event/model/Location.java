@@ -3,7 +3,9 @@ package ru.akpsv.main.event.model;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 
+@Embeddable
 @Getter
 @Setter
 @NoArgsConstructor
@@ -11,6 +13,11 @@ import javax.persistence.*;
 @Builder(toBuilder = true)
 public class Location {
     //Широта и долгота места проведения события
-    private Double lat; //Широта
+    @NotBlank
+    @Column(name = "location_longitude")
     private Double lon; //Долгота
+
+    @NotBlank
+    @Column(name = "location_latitude")
+    private Double lat; //Широта
 }

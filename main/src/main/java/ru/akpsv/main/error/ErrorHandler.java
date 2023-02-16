@@ -5,12 +5,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.akpsv.main.category.CategoryController;
+import ru.akpsv.main.event.EventController;
 import ru.akpsv.main.user.UserController;
 
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
-@RestControllerAdvice(assignableTypes = {UserController.class})
+@RestControllerAdvice(assignableTypes = {UserController.class, EventController.class, CategoryController.class})
 public class ErrorHandler {
 
     //Запрос составлен некорректно (400)
@@ -32,7 +34,7 @@ public class ErrorHandler {
         return ApiError.builder()
                 .status(HttpStatus.FORBIDDEN.toString())
                 .reason(exception.getConstraintName())
-                .message(exception.getMessage())
+                .message(exception.toString())
                 .timestamp(LocalDateTime.now().toString())
                 .build();
     }
