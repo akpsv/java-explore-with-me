@@ -1,10 +1,14 @@
 package ru.akpsv.main.event.dto;
 
-import lombok.Builder;
+import lombok.*;
 import ru.akpsv.main.category.dto.CategoryDto;
 import ru.akpsv.main.event.model.Location;
 import ru.akpsv.main.user.dto.UserShortDto;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder(toBuilder = true)
 public class EventFullDto {
     private String annotation;      //Краткое описание

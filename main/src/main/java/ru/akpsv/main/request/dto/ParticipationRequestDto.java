@@ -1,8 +1,10 @@
 package ru.akpsv.main.request.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.*;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class ParticipationRequestDto {

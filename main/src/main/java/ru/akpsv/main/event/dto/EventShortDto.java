@@ -1,11 +1,13 @@
 package ru.akpsv.main.event.dto;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.*;
 import ru.akpsv.main.category.dto.CategoryDto;
 import ru.akpsv.main.user.dto.UserShortDto;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class EventShortDto {

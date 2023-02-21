@@ -50,7 +50,12 @@ public class EventMapper {
 
         User user = userRepository.findById(event.getInitiatorId()).get();
         UserShortDto userShortDto = UserMapper.toUserShotDto(user);
-
+        String publishedOn;
+        if ( event.getPublishedOn() == null) {
+            publishedOn = "";
+        } else {
+            publishedOn = event.getPublishedOn().format(formatter);
+        }
         return EventFullDto.builder()
                 .annotation(event.getAnnotation())
                 .category(categoryDto)
@@ -63,7 +68,7 @@ public class EventMapper {
                 .location(event.getLocation())
                 .paid(event.getPaid())
                 .participantLimit(event.getParticipantLimit())
-                .publishedOn(event.getPublishedOn().format(formatter))
+                .publishedOn(publishedOn)
                 .requestModeration(event.getRequestModeration())
                 .state(event.getState().name())
                 .title(event.getTitle())
