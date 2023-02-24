@@ -7,7 +7,9 @@ import ru.akpsv.main.event.dto.*;
 import ru.akpsv.main.request.dto.ParticipationRequestDto;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping
@@ -20,7 +22,7 @@ public class EventController {
      */
     @PostMapping("/users/{userId}/events")
     @ResponseStatus(HttpStatus.CREATED)
-    public EventFullDto create(@PathVariable Long userId, @RequestBody NewEventDto newEvent) {
+    public EventFullDto create(@PathVariable Long userId, @Valid @RequestBody NewEventDto newEvent) {
         return eventService.create(userId, newEvent).get();
     }
 
@@ -37,22 +39,22 @@ public class EventController {
     }
 
     @PatchMapping("/users/{userId}/events/{eventId}")
-    public EventFullDto updateEventByUser(@RequestBody UpdateEventUserRequest updatingRequest,
+    public EventFullDto updateEventByUser(@Valid @RequestBody UpdateEventUserRequest updatingRequest,
                                           @PathVariable Long userId,
                                           @PathVariable Long eventId) {
-        return eventService.updateEventByUser(updatingRequest, userId, eventId);
+        return eventService.updateEventByCurrentUser(updatingRequest, userId, eventId);
     }
 
     @GetMapping("/users/{userId}/events/{eventId}/requests")
-    public List<ParticipationRequestDto> getRequestsOfParticipantsEventOfCurrentUser(@PathVariable Long userId, @PathVariable Long eventId){
+    public List<ParticipationRequestDto> getRequestsOfParticipantsEventOfCurrentUser(@PathVariable Long userId, @PathVariable Long eventId) {
         return eventService.getRequestsOfParticipantsEventOfCurrentUser(eventId);
     }
 
     @PatchMapping("/users/{userId}/events/{eventId}/requests")
-    public EventRequestStatusUpdateResult changeReqeustsStatus(@RequestBody EventRequestStatusUpdateRequest updateRequestStatus,
-                                                               @PathVariable Long userId,
-                                                               @PathVariable Long eventId){
-        return eventService.changeRequestsStatus(updateRequestStatus, userId, eventId);
+    public EventRequestStatusUpdateResult changeReqeustsStatusCurrentUser(@Valid @RequestBody EventRequestStatusUpdateRequest updateRequestStatus,
+                                                                          @PathVariable Long userId,
+                                                                          @PathVariable Long eventId) {
+        return eventService.changeRequestsStatusCurrentUser(updateRequestStatus, userId, eventId);
 
 
     }
@@ -61,11 +63,11 @@ public class EventController {
      * Admin: События. АПИ для работы с событиями
      */
     @GetMapping("/admin/events")
-    public List<EventFullDto> getAdminEventsByParams(@RequestParam Long[] users,
-                                                     @RequestParam String[] states,
-                                                     @RequestParam Long[] categories,
-                                                     @RequestParam String rangeStart,
-                                                     @RequestParam String rangeEnd,
+    public List<EventFullDto> getAdminEventsByParams(@RequestParam Optional<List<Long>> users,
+                                                     @RequestParam Optional<List<String>> states,
+                                                     @RequestParam Optional<List<Long>> categories,
+                                                     @RequestParam Optional<String> rangeStart,
+                                                     @RequestParam Optional<String> rangeEnd,
                                                      @RequestParam(defaultValue = "0") Integer from,
                                                      @RequestParam(defaultValue = "10") Integer size) {
         EventParamsForAdmin params = new EventParamsForAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
@@ -76,18 +78,18 @@ public class EventController {
 
     @PatchMapping("/admin/events/{eventId}")
     public EventFullDto updateEvent(@RequestBody UpdateEventAdminRequest updatingRequest, @PathVariable Long eventId) {
-        return eventService.updateEvent(updatingRequest, eventId);
+        return eventService.updateEventByAdmin(updatingRequest, eventId);
     }
 
     //Public: События. Публичный АПИ для работы с событиями
     @GetMapping("/events")
-    public List<EventShortDto> getPublicEventsByParams(@RequestParam String text,
-                                                       @RequestParam Long[] categories,
-                                                       @RequestParam Boolean paid,
-                                                       @RequestParam String rangeStart,
-                                                       @RequestParam String rangeEnd,
-                                                       @RequestParam Boolean onlyAvailable,
-                                                       @RequestParam String sort,
+    public List<EventShortDto> getPublicEventsByParams(@RequestParam Optional<String> text,
+                                                       @RequestParam Optional<List<Long>> categories,
+                                                       @RequestParam Optional<Boolean> paid,
+                                                       @RequestParam Optional<String> rangeStart,
+                                                       @RequestParam Optional<String> rangeEnd,
+                                                       @RequestParam Optional<Boolean> onlyAvailable,
+                                                       @RequestParam Optional<String> sort,
                                                        @RequestParam(defaultValue = "0") Integer from,
                                                        @RequestParam(defaultValue = "10") Integer size,
                                                        HttpServletRequest request

@@ -7,6 +7,7 @@ import ru.akpsv.main.category.dto.CategoryDto;
 import ru.akpsv.main.category.dto.NewCategoryDto;
 import ru.akpsv.main.category.model.Category;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -17,12 +18,12 @@ public class CategoryController {
 
     @PostMapping("/admin/categories")
     @ResponseStatus(HttpStatus.CREATED)
-    public CategoryDto create(@RequestBody NewCategoryDto newCategory) {
+    public CategoryDto create(@Valid @RequestBody NewCategoryDto newCategory) {
         return categoryService.create(newCategory).get();
     }
 
     @PatchMapping("/admin/categories/{catId}")
-    public CategoryDto update(@RequestBody CategoryDto categoryDto, @PathVariable Long catId) {
+    public CategoryDto update(@Valid @RequestBody CategoryDto categoryDto, @PathVariable Long catId) {
         return categoryService.updateCategoryById(catId, categoryDto).get();
     }
 

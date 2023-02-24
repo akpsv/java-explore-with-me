@@ -3,14 +3,17 @@ package ru.akpsv.main.event;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.List;
+import java.util.Optional;
+
 @Getter
 @AllArgsConstructor
 public class EventParamsForAdmin {
-    private Long[] users;
-    private String[] states;
-    private Long[] categories;
-    private String rangeStart;
-    private String rangeEnd;
+    private Optional<List<Long>> users;
+    private Optional<List<String>> states;
+    private Optional<List<Long>> categories;
+    private Optional<String> rangeStart;
+    private Optional<String> rangeEnd;
     private Integer from;
     private Integer size;
 }

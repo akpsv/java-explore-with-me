@@ -14,7 +14,7 @@ public interface EventService {
 
     List<EventFullDto> getEventsByAdminParams(EventParamsForAdmin params);
 
-    EventFullDto updateEvent(UpdateEventAdminRequest updatingRequest, Long eventId);
+    EventFullDto updateEventByAdmin(UpdateEventAdminRequest updatingRequest, Long eventId);
 
     List<EventShortDto> getEventsByPublicParams(EventParamsForPublic params, HttpServletRequest request);
 
@@ -22,9 +22,9 @@ public interface EventService {
 
     EventFullDto getFullEventInfoByUser(Long userId, Long eventId);
 
-    EventFullDto updateEventByUser(UpdateEventUserRequest updatingRequest, Long userId, Long eventId);
+    EventFullDto updateEventByCurrentUser(UpdateEventUserRequest updatingRequest, Long userId, Long eventId);
 
     List<ParticipationRequestDto> getRequestsOfParticipantsEventOfCurrentUser(Long eventId);
 
-    EventRequestStatusUpdateResult changeRequestsStatus(EventRequestStatusUpdateRequest updateRequestStatus, Long userId, Long eventId);
+    EventRequestStatusUpdateResult changeRequestsStatusCurrentUser(EventRequestStatusUpdateRequest updateRequestStatus, Long userId, Long eventId);
 }

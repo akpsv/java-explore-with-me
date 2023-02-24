@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.akpsv.dto.RequestDtoIn;
 import ru.akpsv.dto.statclient.RestClientService;
 import ru.akpsv.main.error.LimitReachedException;
+import ru.akpsv.main.error.ViolationOfRestrictionsException;
 import ru.akpsv.main.event.dto.*;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
@@ -19,6 +20,7 @@ import ru.akpsv.main.request.model.RequestStatus;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -62,16 +64,118 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventFullDto updateEvent(UpdateEventAdminRequest updatingRequest, Long eventId) {
+    public EventFullDto updateEventByAdmin(UpdateEventAdminRequest updatingRequest, Long eventId) {
         String noSuchElementExceptionMessage = "Event witn id=" + eventId + " was not found";
         Event updatingEvent = eventRepository.findById(eventId).orElseThrow(() -> new NoSuchElementException(noSuchElementExceptionMessage));
 
-        updatingEvent = checkRequestAndFillUpdatingFilds(updatingRequest, updatingEvent);
+        updatingEvent = checkAdminRequestAndFillUpdatingFilds(updatingRequest, updatingEvent);
         Event savedUpdatedEvent = eventRepository.save(updatingEvent);
         return eventMapper.toEventFullDto(savedUpdatedEvent);
     }
 
-    protected Event checkRequestAndFillUpdatingFilds(UpdateEventRequest request, Event updatingEvent) {
+    @Override
+    public EventFullDto updateEventByCurrentUser(UpdateEventUserRequest updatingRequest, Long userId, Long eventId) {
+        String errorMessage = "Event with id=" + eventId + " and initiatorId=" + userId + " not exist";
+        EventFullDto eventFullDto = eventRepository.getEventByInitiatorIdAndId(userId, eventId)
+                .map(event -> {
+                    Event updatedEvent = checkCurrentUserRequestAndFillUpdatingFields(updatingRequest, event);
+                    return eventMapper.toEventFullDto(updatedEvent);
+                })
+                .orElseThrow(() -> new NoSuchElementException(errorMessage));
+        return eventFullDto;
+    }
+
+    /**
+     * Проверка запроса на изменение и заполнение полей обновляемого события для администратора
+     *
+     * @param request
+     * @param updatingEvent
+     * @return
+     */
+    protected Event checkAdminRequestAndFillUpdatingFilds(UpdateEventRequest request, Event updatingEvent) {
+        updatingEvent = checkAndFillBaseFields(request, updatingEvent);
+        updatingEvent = checkAdminConditionsAndFillStateField(request, updatingEvent);
+        return updatingEvent;
+    }
+
+    /**
+     * Проверка запроса на изменение и заполнение полей обновляемого события для текущего пользователя
+     *
+     * @param request
+     * @param updatingEvent
+     * @return
+     */
+    protected Event checkCurrentUserRequestAndFillUpdatingFields(UpdateEventRequest request, Event updatingEvent) {
+        updatingEvent = checkAndFillBaseFields(request, updatingEvent);
+        updatingEvent = checkUserConditionsAndFillStateField(request, updatingEvent);
+        return updatingEvent;
+    }
+
+    /**
+     * Проверка условий изменения поля state для текущего пользователя и его заполнение
+     *
+     * @param request
+     * @param updatingEvent
+     * @return
+     */
+    private Event checkUserConditionsAndFillStateField(UpdateEventRequest request, Event updatingEvent) {
+        if (request.getStateAction() != null) {
+            //изменить можно только отмененные события или события в состоянии ожидания модерации (Ожидается код ошибки 409)
+            if (updatingEvent.getState().equals(EventState.CANCELED) || updatingEvent.getState().equals(EventState.PENDING)) {
+                //дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента (Ожидается код ошибки 409)
+                if (updatingEvent.getEventDate().minusHours(2).isAfter(LocalDateTime.now())) {
+                    if (request.getStateAction().equals(StateAction.SEND_TO_REVIEW.name())) {
+                        updatingEvent = updatingEvent.toBuilder().state(EventState.PENDING).build();
+                    }
+                }
+            }
+        }
+        return updatingEvent;
+    }
+
+    /**
+     * Проверка условий изменения поля state для текущего пользователя и его заполнение
+     * Редактирование данных любого события администратором. Валидация данных не требуется.
+     * Обратите внимание:
+     * дата начала изменяемого события должна быть не ранее чем за час от даты публикации. (Ожидается код ошибки 409)
+     * событие можно публиковать, только если оно в состоянии ожидания публикации (Ожидается код ошибки 409)
+     * событие можно отклонить, только если оно еще не опубликовано (Ожидается код ошибки 409
+     *
+     * @param request
+     * @param updatingEvent
+     * @return
+     */
+    private Event checkAdminConditionsAndFillStateField(UpdateEventRequest request, Event updatingEvent) {
+        if (request.getStateAction() != null) {
+            if (request.getStateAction().equals(StateAction.PUBLISH_EVENT.name())) {
+                if (!updatingEvent.getState().equals(EventState.PENDING)) {
+                    throw new ViolationOfRestrictionsException("Cannot publish the event because it's not in the right state: PUBLISHED");
+                }
+                LocalDateTime publishedTime = LocalDateTime.now().plusMinutes(1);
+                if (!updatingEvent.getEventDate().minusHours(1L).isAfter(publishedTime)) {
+                    throw new ConcurrencyFailureException("Incorrect EventDate or PublishedOn");
+                }
+                updatingEvent = updatingEvent.toBuilder().publishedOn(publishedTime).state(EventState.PUBLISHED).build();
+
+            } else {
+                if (!updatingEvent.getState().equals(EventState.PENDING)) {
+                    throw new ConcurrencyFailureException("Cannot cancel the event because it's not in the right state: PUBLISHED");
+                }
+                updatingEvent = updatingEvent.toBuilder().state(EventState.CANCELED).build();
+            }
+        }
+        return updatingEvent;
+    }
+
+    /**
+     * Проверка всех полей кроме State на присутствие какого-то значения.
+     * Если значение присутствует, то значение обновляется из запроса.
+     *
+     * @param request
+     * @param updatingEvent
+     * @return
+     */
+    private Event checkAndFillBaseFields(UpdateEventRequest request, Event updatingEvent) {
         if (request.getAnnotation() != null)
             updatingEvent = updatingEvent.toBuilder().annotation(request.getAnnotation()).build();
         if (request.getCategory() != null)
@@ -88,25 +192,6 @@ public class EventServiceImpl implements EventService {
             updatingEvent = updatingEvent.toBuilder().participantLimit(request.getParticipantLimit()).build();
         if (request.getRequestModeration() != null)
             updatingEvent = updatingEvent.toBuilder().requestModeration(request.getRequestModeration()).build();
-
-        if (request.getStateAction() != null) {
-            if (request.getStateAction().equals(StateAction.PUBLISH_EVENT.name())) {
-                if (!updatingEvent.getState().equals(EventState.PENDING)) {
-                    throw new ConcurrencyFailureException("Cannot publish the event because it's not in the right state: PUBLISHED");
-                }
-                LocalDateTime publishedTime = LocalDateTime.now().plusMinutes(1);
-                if (!updatingEvent.getEventDate().minusHours(1L).isAfter(publishedTime)) {
-                    throw new ConcurrencyFailureException("Incorrect EventDate or PublishedOn");
-                }
-                updatingEvent = updatingEvent.toBuilder().publishedOn(publishedTime).state(EventState.PUBLISHED).build();
-
-            } else {
-                if (!updatingEvent.getState().equals(EventState.PENDING)) {
-                    throw new ConcurrencyFailureException("Cannot cancel the event because it's not in the right state: PUBLISHED");
-                }
-                updatingEvent = updatingEvent.toBuilder().state(EventState.CANCELED).build();
-            }
-        }
         if (request.getTitle() != null)
             updatingEvent = updatingEvent.toBuilder().title(request.getTitle()).build();
         return updatingEvent;
@@ -150,18 +235,6 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventFullDto updateEventByUser(final UpdateEventUserRequest updatingRequest, Long userId, Long eventId) {
-        String errorMessage = "Event with id=" + eventId + " and initiatorId=" + userId + " not exist";
-        EventFullDto eventFullDto = eventRepository.getEventByInitiatorIdAndId(userId, eventId)
-                .map(event -> {
-                    Event updatedEvent = checkRequestAndFillUpdatingFilds(updatingRequest, event);
-                    return eventMapper.toEventFullDto(updatedEvent);
-                })
-                .orElseThrow(() -> new NoSuchElementException(errorMessage));
-        return eventFullDto;
-    }
-
-    @Override
     public List<ParticipationRequestDto> getRequestsOfParticipantsEventOfCurrentUser(Long eventId) {
         return requestRepository.getRequestsByEventId(eventId).stream()
                 .map(RequestMapper::toParticipationRequestDto)
@@ -170,14 +243,15 @@ public class EventServiceImpl implements EventService {
 
     /**
      * Изменение статуса (подтверждена, отменена) заявок на участие в событии текущего пользователя
+     *
      * @param updateRequestStatus
      * @param userId
      * @param eventId
      * @return
      */
     @Override
-    public EventRequestStatusUpdateResult changeRequestsStatus(EventRequestStatusUpdateRequest updateRequestStatus, Long userId, Long eventId) {
-
+    public EventRequestStatusUpdateResult changeRequestsStatusCurrentUser(EventRequestStatusUpdateRequest updateRequestStatus, Long userId, Long eventId) {
+        //Проверка, что заявка принадлежит текущему пользователю
         Event event = eventRepository.findById(eventId)
                 .filter(someEvent -> someEvent.getInitiatorId() == userId)
                 .orElseThrow(() -> new NoSuchElementException("Event with id=" + eventId + " was not found"));
@@ -196,14 +270,18 @@ public class EventServiceImpl implements EventService {
         List<ParticipationRequestDto> rejectedRequests = new ArrayList<>();
 
         //если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить
-        for (Request request: requestsFromList) {
+        for (Request request : requestsFromList) {
             int limit;
             if ((limit = event.getParticipantLimit()) > 0) {
                 Event eventWithLimit = event.toBuilder().participantLimit(limit - 1).build();
                 eventRepository.save(eventWithLimit);
                 Request requestWithChangedStatus = request.toBuilder().status(RequestStatus.valueOf(updateRequestStatus.getStatus())).build();
                 Request savedUpdatedReqeust = requestRepository.save(requestWithChangedStatus);
-                confirmedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
+                if (updateRequestStatus.getStatus().equals(RequestStatus.REJECTED.name())) {
+                    rejectedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
+                } else if (updateRequestStatus.getStatus().equals(RequestStatus.CONFIRMED.name())) {
+                    confirmedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
+                }
             } else {
                 Request requestWithChangedStatus = request.toBuilder().status(RequestStatus.REJECTED).build();
                 Request savedUpdatedReqeust = requestRepository.save(requestWithChangedStatus);

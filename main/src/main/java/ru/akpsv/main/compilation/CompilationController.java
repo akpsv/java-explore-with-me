@@ -7,6 +7,7 @@ import ru.akpsv.main.compilation.dto.CompilationDto;
 import ru.akpsv.main.compilation.dto.NewCompilationDto;
 import ru.akpsv.main.compilation.dto.UpdateCompilationRequest;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -26,7 +27,7 @@ public class CompilationController {
      */
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/admin/compilations")
-    public CompilationDto createCompilation(@RequestBody NewCompilationDto newCompilationDto) {
+    public CompilationDto createCompilation(@Valid @RequestBody NewCompilationDto newCompilationDto) {
         return compilationService.create(newCompilationDto);
     }
 

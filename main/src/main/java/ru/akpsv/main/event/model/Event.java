@@ -1,9 +1,11 @@
 package ru.akpsv.main.event.model;
 
 import lombok.*;
+import org.aspectj.lang.annotation.Before;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
@@ -42,6 +44,7 @@ public class Event {
     private LocalDateTime createdOn;       //Дата и время создания события (в формате "yyyy-MM-dd HH:mm:ss") TODO:(Заполняется базой при сохранении)
 
     @NotNull
+    @FutureOrPresent
     @Column(name = "event_date")
     private LocalDateTime eventDate;       //Дата и время на которые намечено событие (в формате "yyyy-MM-dd HH:mm:ss")
 

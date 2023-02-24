@@ -7,6 +7,7 @@ import ru.akpsv.main.user.dto.NewUserRequest;
 import ru.akpsv.main.user.dto.UserDto;
 import ru.akpsv.main.user.model.User;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -15,9 +16,9 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserDto createUser(@RequestBody NewUserRequest newUser){
+    @PostMapping
+    public UserDto createUser(@Valid @RequestBody NewUserRequest newUser){
         return userService.create(newUser).get();
     }
 

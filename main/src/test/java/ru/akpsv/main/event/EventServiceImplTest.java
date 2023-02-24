@@ -5,16 +5,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.akpsv.TestHelper;
-import ru.akpsv.main.event.dto.EventFullDto;
 import ru.akpsv.main.event.dto.EventMapper;
 import ru.akpsv.main.event.dto.UpdateEventAdminRequest;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
-
-import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class EventServiceImplTest {
@@ -44,7 +40,7 @@ class EventServiceImplTest {
         Event updatingEvent = TestHelper.createEvent(1L);
 
         //Действия
-        Event actualUpdatedEvent = eventService.checkRequestAndFillUpdatingFilds(requestWitnPublishEvent, updatingEvent) ;      //Проверка
+        Event actualUpdatedEvent = eventService.checkAdminRequestAndFillUpdatingFilds(requestWitnPublishEvent, updatingEvent) ;      //Проверка
         //Проверка
         org.hamcrest.MatcherAssert.assertThat(actualUpdatedEvent.getState(), Matchers.equalTo(EventState.PUBLISHED));
     }
