@@ -1,5 +1,8 @@
 package ru.akpsv.main.request.model;
 
 public enum RequestStatus {
-    PENDING
+    PENDING,
+    CANCELED,
+    CONFIRMED,
+    REJECTED
 }

@@ -1,6 +1,8 @@
 package ru.akpsv;
 
 import ru.akpsv.main.category.dto.CategoryDto;
+import ru.akpsv.main.compilation.Compilation;
+import ru.akpsv.main.compilation.dto.NewCompilationDto;
 import ru.akpsv.main.event.dto.EventFullDto;
 import ru.akpsv.main.event.dto.NewEventDto;
 import ru.akpsv.main.event.dto.UpdateEventAdminRequest;
@@ -14,6 +16,8 @@ import ru.akpsv.main.user.model.User;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.Set;
 
 public class TestHelper {
     public static NewUserRequest createNewUserRequest(String email) {
@@ -74,6 +78,7 @@ public class TestHelper {
 
     public static UpdateEventAdminRequest createUpdateEventAdminRequestWitnPublishEvent() {
         return UpdateEventAdminRequest.builder().stateAction("PUBLISH_EVENT").build();
+
     }
 
     public static EventFullDto createEventFullDto() {
@@ -93,5 +98,22 @@ public class TestHelper {
                 .title("title")
                 .build();
 
+    }
+
+    public static NewCompilationDto createNewCompilationDto() {
+        return NewCompilationDto.builder()
+                .events(Set.of(1L,2L))
+                .pinned(false)
+                .title("title")
+                .build();
+    }
+
+    public static Compilation createCompilation() {
+        return Compilation.builder()
+                .id(1L)
+                .title("title")
+                .pinned(false)
+                .events(Collections.emptySet())
+                .build();
     }
 }

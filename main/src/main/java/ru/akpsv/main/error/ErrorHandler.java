@@ -38,6 +38,16 @@ public class ErrorHandler {
                 .timestamp(LocalDateTime.now().toString())
                 .build();
     }
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleIntegrityConstraint(final LimitReachedException exception) {
+        return ApiError.builder()
+                .status(HttpStatus.FORBIDDEN.toString())
+                .reason("For the requested operation the conditions are not met.")
+                .message(exception.getMessage())
+                .timestamp(LocalDateTime.now().toString())
+                .build();
+    }
 
     //Пользователь не найден или недоступен (404)
     @ExceptionHandler

@@ -1,12 +1,8 @@
 package ru.akpsv.main.compilation.dto;
 
 import lombok.*;
-import ru.akpsv.main.event.dto.EventShortDto;
-import ru.akpsv.main.event.model.Event;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -17,13 +13,9 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class CompilationDto {
-    private List<EventShortDto> events; //Список событий входящих в подборку
-    @NotNull
-    private Long id; //Идентификатор
-    @NotNull
+public class NewCompilationDto {
+    private Set<Long> events; //Список идентификаторов событий входящих в подборку
     private Boolean pinned; //Закреплена ли подборка на главной странице сайта
     @NotBlank
     private String title; //Заголовок подборки
-
 }

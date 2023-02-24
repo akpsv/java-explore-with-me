@@ -6,15 +6,22 @@ import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.stereotype.Service;
 import ru.akpsv.dto.RequestDtoIn;
 import ru.akpsv.dto.statclient.RestClientService;
+import ru.akpsv.main.error.LimitReachedException;
 import ru.akpsv.main.event.dto.*;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
+import ru.akpsv.main.request.RequestRepository;
+import ru.akpsv.main.request.dto.ParticipationRequestDto;
+import ru.akpsv.main.request.dto.RequestMapper;
+import ru.akpsv.main.request.model.Request;
+import ru.akpsv.main.request.model.RequestStatus;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -24,6 +31,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
+    private final RequestRepository requestRepository;
     private final EventMapper eventMapper;
     @PersistenceContext
     EntityManager em;
@@ -54,16 +62,16 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventFullDto updateEvent(UpdateEventAdminRequest updateEvent, Long eventId) {
+    public EventFullDto updateEvent(UpdateEventAdminRequest updatingRequest, Long eventId) {
         String noSuchElementExceptionMessage = "Event witn id=" + eventId + " was not found";
         Event updatingEvent = eventRepository.findById(eventId).orElseThrow(() -> new NoSuchElementException(noSuchElementExceptionMessage));
 
-        updatingEvent = checkRequestAndFillUpdatingFilds(updateEvent, updatingEvent);
+        updatingEvent = checkRequestAndFillUpdatingFilds(updatingRequest, updatingEvent);
         Event savedUpdatedEvent = eventRepository.save(updatingEvent);
         return eventMapper.toEventFullDto(savedUpdatedEvent);
     }
 
-    protected Event checkRequestAndFillUpdatingFilds(UpdateEventAdminRequest request, Event updatingEvent) {
+    protected Event checkRequestAndFillUpdatingFilds(UpdateEventRequest request, Event updatingEvent) {
         if (request.getAnnotation() != null)
             updatingEvent = updatingEvent.toBuilder().annotation(request.getAnnotation()).build();
         if (request.getCategory() != null)
@@ -133,5 +141,80 @@ public class EventServiceImpl implements EventService {
         return eventRepository.findById(eventId)
                 .map(eventMapper::toEventFullDto)
                 .orElseThrow(() -> new NoSuchElementException("Event not foun"));
+    }
+
+    @Override
+    public EventFullDto getFullEventInfoByUser(Long userId, Long eventId) {
+        Event event = eventRepository.getFullEventInfoByUser(em, userId, eventId);
+        return eventMapper.toEventFullDto(event);
+    }
+
+    @Override
+    public EventFullDto updateEventByUser(final UpdateEventUserRequest updatingRequest, Long userId, Long eventId) {
+        String errorMessage = "Event with id=" + eventId + " and initiatorId=" + userId + " not exist";
+        EventFullDto eventFullDto = eventRepository.getEventByInitiatorIdAndId(userId, eventId)
+                .map(event -> {
+                    Event updatedEvent = checkRequestAndFillUpdatingFilds(updatingRequest, event);
+                    return eventMapper.toEventFullDto(updatedEvent);
+                })
+                .orElseThrow(() -> new NoSuchElementException(errorMessage));
+        return eventFullDto;
+    }
+
+    @Override
+    public List<ParticipationRequestDto> getRequestsOfParticipantsEventOfCurrentUser(Long eventId) {
+        return requestRepository.getRequestsByEventId(eventId).stream()
+                .map(RequestMapper::toParticipationRequestDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Изменение статуса (подтверждена, отменена) заявок на участие в событии текущего пользователя
+     * @param updateRequestStatus
+     * @param userId
+     * @param eventId
+     * @return
+     */
+    @Override
+    public EventRequestStatusUpdateResult changeRequestsStatus(EventRequestStatusUpdateRequest updateRequestStatus, Long userId, Long eventId) {
+
+        Event event = eventRepository.findById(eventId)
+                .filter(someEvent -> someEvent.getInitiatorId() == userId)
+                .orElseThrow(() -> new NoSuchElementException("Event with id=" + eventId + " was not found"));
+        //если для события лимит заявок равен 0 или отключена пре-модерация заявок, то подтверждение заявок не требуется
+        if (event.getParticipantLimit() == 0 || event.getRequestModeration() == false) {
+            return new EventRequestStatusUpdateResult();
+        }
+        //нельзя подтвердить заявку, если уже достигнут лимит по заявкам на данное событие (Ожидается код ошибки 409)
+        if (event.getParticipantLimit() == 0) {
+            throw new LimitReachedException("The participant limit has been reached");
+        }
+
+        List<Request> requestsFromList = requestRepository.getRequestsFromList(em, updateRequestStatus.getRequestIds(), userId, eventId);
+
+        List<ParticipationRequestDto> confirmedRequests = new ArrayList<>();
+        List<ParticipationRequestDto> rejectedRequests = new ArrayList<>();
+
+        //если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить
+        for (Request request: requestsFromList) {
+            int limit;
+            if ((limit = event.getParticipantLimit()) > 0) {
+                Event eventWithLimit = event.toBuilder().participantLimit(limit - 1).build();
+                eventRepository.save(eventWithLimit);
+                Request requestWithChangedStatus = request.toBuilder().status(RequestStatus.valueOf(updateRequestStatus.getStatus())).build();
+                Request savedUpdatedReqeust = requestRepository.save(requestWithChangedStatus);
+                confirmedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
+            } else {
+                Request requestWithChangedStatus = request.toBuilder().status(RequestStatus.REJECTED).build();
+                Request savedUpdatedReqeust = requestRepository.save(requestWithChangedStatus);
+                rejectedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
+            }
+        }
+        EventRequestStatusUpdateResult result = EventRequestStatusUpdateResult.builder()
+                .confirmedRequests(confirmedRequests)
+                .rejectedRequests(rejectedRequests)
+                .build();
+
+        return result;
     }
 }

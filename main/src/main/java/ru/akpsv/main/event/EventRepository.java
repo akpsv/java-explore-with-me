@@ -3,6 +3,7 @@ package ru.akpsv.main.event;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import ru.akpsv.main.event.dto.EventFullDto;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
 import ru.akpsv.main.event.model.Event_;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -93,5 +95,18 @@ public interface EventRepository extends JpaRepository<Event, Long> {
         List<Event> resultList = query.getResultList();
         return resultList;
     }
+
+    default Event getFullEventInfoByUser(EntityManager em, Long userId, Long eventId){
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Event> cq = cb.createQuery(Event.class);
+        Root<Event> fromEvent = cq.from(Event.class);
+        Predicate user = cb.equal(fromEvent.get(Event_.INITIATOR_ID), userId);
+        Predicate event = cb.equal(fromEvent.get(Event_.ID), eventId);
+        cq.select(fromEvent).where(user, event);
+        TypedQuery<Event> query = em.createQuery(cq);
+        return query.getSingleResult();
+    }
+
+    Optional<Event> getEventByInitiatorIdAndId(Long userId, Long eventId);
 
 }
