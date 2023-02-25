@@ -9,12 +9,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.akpsv.main.category.CategoryController;
 import ru.akpsv.main.compilation.CompilationController;
 import ru.akpsv.main.event.EventController;
+import ru.akpsv.main.request.RequestController;
 import ru.akpsv.main.user.UserController;
 
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
-@RestControllerAdvice(assignableTypes = {UserController.class, EventController.class, CategoryController.class, CompilationController.class})
+@RestControllerAdvice(assignableTypes = {
+        UserController.class, EventController.class,
+        CategoryController.class, CompilationController.class,
+        RequestController.class
+})
 public class ErrorHandler {
 
     //Запрос составлен некорректно (400)
@@ -28,6 +33,7 @@ public class ErrorHandler {
                 .timestamp(LocalDateTime.now().toString())
                 .build();
     }
+
     //Нарушение целостности данных (409)
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
@@ -39,6 +45,7 @@ public class ErrorHandler {
                 .timestamp(LocalDateTime.now().toString())
                 .build();
     }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleIncorrectRequest(javax.validation.ConstraintViolationException exception) {
@@ -49,6 +56,7 @@ public class ErrorHandler {
                 .timestamp(LocalDateTime.now().toString())
                 .build();
     }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleIntegrityConstraint(final ConstraintViolationException exception) {
@@ -59,6 +67,7 @@ public class ErrorHandler {
                 .timestamp(LocalDateTime.now().toString())
                 .build();
     }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleIntegrityConstraint(final LimitReachedException exception) {

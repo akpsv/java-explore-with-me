@@ -3,6 +3,7 @@ package ru.akpsv.main.event.dto;
 import lombok.*;
 import ru.akpsv.main.event.model.Location;
 
+import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
@@ -21,7 +22,7 @@ public class UpdateEventRequest {
     protected String eventDate;   //Новые дата и время на которые намечено событие. Дата и время указываются в формате "yyyy-MM-dd HH:mm:ss"
     protected Location location;
     protected Boolean paid;       //Новое значение флага о платности мероприятия
-    protected Integer participantLimit;   //Новый лимит пользователей
+    protected Long participantLimit;   //Новый лимит пользователей
     protected Boolean requestModeration;  //Нужна ли пре-модерация заявок на участие
     protected String stateAction;   //  Новое состояние события 	(Enum:[ PUBLISH_EVENT, REJECT_EVENT ])
     @Max(120)

@@ -21,7 +21,7 @@ public class EventFullDto {
     private UserShortDto initiator; //Пользователь (краткая информация)
     private Location location;      //Широта и долгота места проведения события
     private Boolean paid;           //Нужно ли оплачивать участие
-    private Integer participantLimit;   //Ограничение на количество участников. Значение 0 - означает отсутствие ограничения
+    private Long participantLimit;   //Ограничение на количество участников. Значение 0 - означает отсутствие ограничения
     private String publishedOn;     //Дата и время публикации события (в формате "yyyy-MM-dd HH:mm:ss")
     private Boolean requestModeration;  //Нужна ли пре-модерация заявок на участие
     private String state;           //Список состояний жизненного цикла события Enum: [ PENDING, PUBLISHED, CANCELED ]

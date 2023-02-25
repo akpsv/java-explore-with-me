@@ -40,19 +40,22 @@ public interface EventRepository extends JpaRepository<Event, Long> {
         List<Long> userIds = params.getUsers().orElse(Collections.emptyList());
         Predicate users = fromEvent.get(Event_.INITIATOR_ID).in(userIds);
 
-        List<String> collectOfStates = params.getStates()
-                .orElseGet(Collections::emptyList);
 
-        Predicate states = fromEvent.get(Event_.STATE).in(collectOfStates);
+        List<EventState> collectOfEventStates = params.getStates().orElse(Collections.emptyList())
+                .stream()
+                .map(state -> EventState.valueOf(state))
+                .collect(Collectors.toList());
+        Predicate states = fromEvent.get(Event_.STATE).in(collectOfEventStates);
 
         List<Long> categoryIds = params.getCategories().orElseGet(Collections::emptyList);
         Predicate categories = fromEvent.get(Event_.CATEGORY_ID).in(categoryIds);
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
         if (params.getRangeStart().isPresent() && params.getRangeEnd().isPresent()){
             LocalDateTime start = LocalDateTime.parse(params.getRangeStart().get(), formatter);
             LocalDateTime end = LocalDateTime.parse(params.getRangeEnd().get(), formatter);
-            Predicate rangeOfDateTime = cb.between(fromEvent.get(Event_.eventDate), start, end);
+            Predicate rangeOfDateTime = cb.between(fromEvent.get(Event_.EVENT_DATE), start, end);
             cq.where(users, states, categories, rangeOfDateTime);
         } else {
             cq.where(users, states, categories);

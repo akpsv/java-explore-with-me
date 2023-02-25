@@ -20,7 +20,6 @@ import ru.akpsv.main.request.model.RequestStatus;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolationException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -106,6 +105,9 @@ public class EventServiceImpl implements EventService {
      * @return
      */
     protected Event checkCurrentUserRequestAndFillUpdatingFields(UpdateEventRequest request, Event updatingEvent) {
+        if (request.getEventDate() != null && LocalDateTime.parse(request.getEventDate(), formatter).isBefore(LocalDateTime.now())) {
+            throw new ViolationOfRestrictionsException("Changing event date is not correct");
+        }
         updatingEvent = checkAndFillBaseFields(request, updatingEvent);
         updatingEvent = checkUserConditionsAndFillStateField(request, updatingEvent);
         return updatingEvent;
@@ -119,6 +121,9 @@ public class EventServiceImpl implements EventService {
      * @return
      */
     private Event checkUserConditionsAndFillStateField(UpdateEventRequest request, Event updatingEvent) {
+        if (updatingEvent.getState().equals(EventState.PUBLISHED)) {
+            throw new ViolationOfRestrictionsException("Only pending or canceled events can be changed");
+        }
         if (request.getStateAction() != null) {
             //изменить можно только отмененные события или события в состоянии ожидания модерации (Ожидается код ошибки 409)
             if (updatingEvent.getState().equals(EventState.CANCELED) || updatingEvent.getState().equals(EventState.PENDING)) {
@@ -126,7 +131,11 @@ public class EventServiceImpl implements EventService {
                 if (updatingEvent.getEventDate().minusHours(2).isAfter(LocalDateTime.now())) {
                     if (request.getStateAction().equals(StateAction.SEND_TO_REVIEW.name())) {
                         updatingEvent = updatingEvent.toBuilder().state(EventState.PENDING).build();
+                    } else if (request.getStateAction().equals(StateAction.CANCEL_REVIEW.name())) {
+                        updatingEvent = updatingEvent.toBuilder().state(EventState.CANCELED).build();
                     }
+                } else {
+                    throw new ViolationOfRestrictionsException("EventDate not correct");
                 }
             }
         }
@@ -159,7 +168,7 @@ public class EventServiceImpl implements EventService {
 
             } else {
                 if (!updatingEvent.getState().equals(EventState.PENDING)) {
-                    throw new ConcurrencyFailureException("Cannot cancel the event because it's not in the right state: PUBLISHED");
+                    throw new ViolationOfRestrictionsException("Cannot cancel the event because it's not in the right state: PUBLISHED");
                 }
                 updatingEvent = updatingEvent.toBuilder().state(EventState.CANCELED).build();
             }
@@ -182,8 +191,11 @@ public class EventServiceImpl implements EventService {
             updatingEvent = updatingEvent.toBuilder().categoryId(request.getCategory()).build();
         if (request.getDescription() != null)
             updatingEvent = updatingEvent.toBuilder().description(request.getDescription()).build();
-        if (request.getEventDate() != null)
+
+        if (request.getEventDate() != null) {
             updatingEvent = updatingEvent.toBuilder().eventDate(LocalDateTime.parse(request.getEventDate(), formatter)).build();
+        }
+
         if (request.getLocation() != null)
             updatingEvent = updatingEvent.toBuilder().location(request.getLocation()).build();
         if (request.getPaid() != null)
@@ -260,7 +272,7 @@ public class EventServiceImpl implements EventService {
             return new EventRequestStatusUpdateResult();
         }
         //нельзя подтвердить заявку, если уже достигнут лимит по заявкам на данное событие (Ожидается код ошибки 409)
-        if (event.getParticipantLimit() == 0) {
+        if (event.getParticipantLimit() == event.getConfirmedRequests()) {
             throw new LimitReachedException("The participant limit has been reached");
         }
 
@@ -271,9 +283,8 @@ public class EventServiceImpl implements EventService {
 
         //если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить
         for (Request request : requestsFromList) {
-            int limit;
-            if ((limit = event.getParticipantLimit()) > 0) {
-                Event eventWithLimit = event.toBuilder().participantLimit(limit - 1).build();
+            if (event.getParticipantLimit() != event.getConfirmedRequests()) {
+                Event eventWithLimit = event.toBuilder().confirmedRequests(event.getConfirmedRequests() + 1).build();
                 eventRepository.save(eventWithLimit);
                 Request requestWithChangedStatus = request.toBuilder().status(RequestStatus.valueOf(updateRequestStatus.getStatus())).build();
                 Request savedUpdatedReqeust = requestRepository.save(requestWithChangedStatus);

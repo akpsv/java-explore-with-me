@@ -2,7 +2,10 @@ package ru.akpsv.main.request;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.akpsv.main.error.ViolationOfRestrictionsException;
 import ru.akpsv.main.event.EventRepository;
+import ru.akpsv.main.event.model.Event;
+import ru.akpsv.main.event.model.EventState;
 import ru.akpsv.main.request.dto.ParticipationRequestDto;
 import ru.akpsv.main.request.dto.RequestMapper;
 import ru.akpsv.main.request.model.Request;
@@ -24,11 +27,22 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public ParticipationRequestDto create(Long userId, Long eventId) {
+        Event checkedEvent = eventRepository.findById(eventId).filter(event -> event.getInitiatorId() != userId)
+                .filter(event -> event.getState().equals(EventState.PUBLISHED))
+                .filter(event -> event.getParticipantLimit() != event.getConfirmedRequests())
+                .orElseThrow(() -> new ViolationOfRestrictionsException("Initiator of event cannot to add a request"));
+
         Request request = Request.builder()
                 .requesterId(userId)
                 .eventId(eventId)
                 .status(RequestStatus.PENDING)
                 .build();
+
+        if (checkedEvent.getRequestModeration().equals(false)) {
+            request = request.toBuilder().status(RequestStatus.CONFIRMED).build();
+            checkedEvent=checkedEvent.toBuilder().confirmedRequests(checkedEvent.getConfirmedRequests()+1).build();
+            eventRepository.save(checkedEvent);
+        }
 
         Request savedRequest = requestRepository.save(request);
         return RequestMapper.toParticipationRequestDto(savedRequest);
@@ -48,7 +62,8 @@ public class RequestServiceImpl implements RequestService {
                 .filter(request -> request.getRequesterId() == userId)
                 .map(request -> {
                     request = request.toBuilder().status(RequestStatus.CANCELED).build();
-                    return RequestMapper.toParticipationRequestDto(request);})
+                    return RequestMapper.toParticipationRequestDto(request);
+                })
                 .orElseThrow(() -> new NoSuchElementException("Request id=" + requestId + " is not exist"));
     }
 }

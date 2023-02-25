@@ -18,7 +18,7 @@ public class UpdateEventAdminRequest extends UpdateEventRequest {
                                    String eventDate,
                                    Location location,
                                    Boolean paid,
-                                   Integer participantLimit,
+                                   Long participantLimit,
                                    Boolean requestModeration,
                                    String stateAction,
                                    @Max(120) @Min(3) String title) {

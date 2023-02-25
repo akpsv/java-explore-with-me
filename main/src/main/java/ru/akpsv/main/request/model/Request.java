@@ -10,7 +10,13 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "requests")
+@Table(
+        name = "requests",
+        uniqueConstraints = @UniqueConstraint(
+                name = "UNQ_REQUEST",
+                columnNames = {"event_id", "requester_id"}
+        )
+)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,12 +32,12 @@ public class Request {
     @Column(name = "created")
     private LocalDateTime created;     //example: 2022-09-06T21:10:05.432 Дата и время создания заявки (TODO: заполняется бд)
 
-    @Column(name = "event_id")
+    @Column(name = "event_id", nullable = false)
     private Long eventId;         //Идентификатор события
 
-    @Column(name = "requester_id")
+    @Column(name = "requester_id", nullable = false)
     private Long requesterId;     //Идентификатор пользователя, отправившего заявку
 
-    @Column(name="status")
+    @Column(name = "status")
     private RequestStatus status;      //Статус заявки. example: PENDING (может быть перечисление)
 }

@@ -22,7 +22,7 @@ public class NewEventDto {
     @NotNull
     private Location location;      //Широта и долгота места проведения события
     private Boolean paid;           //Нужно ли оплачивать участие
-    private Integer participantLimit;   //Ограничение на количество участников. Значение 0 - означает отсутствие ограничения
+    private Long participantLimit;   //Ограничение на количество участников. Значение 0 - означает отсутствие ограничения
     private Boolean requestModeration;  //Нужна ли пре-модерация заявок на участие
     @NotBlank
     private String title;           //Заголовок

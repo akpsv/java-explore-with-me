@@ -55,7 +55,7 @@ public class Event {
     private Boolean paid;           //Нужно ли оплачивать участие
 
     @Column(name = "participant_limit")
-    private Integer participantLimit;//Ограничение на количество участников. Значение 0 - означает отсутствие ограничения
+    private Long participantLimit;//Ограничение на количество участников. Значение 0 - означает отсутствие ограничения
 
     @Column(name = "published_on")
     private LocalDateTime publishedOn;     //Дата и время публикации события (в формате "yyyy-MM-dd HH:mm:ss") TODO:(Заполняестя во время работы)
