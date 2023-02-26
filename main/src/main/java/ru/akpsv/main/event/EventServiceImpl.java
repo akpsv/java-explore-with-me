@@ -75,13 +75,12 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventFullDto updateEventByCurrentUser(UpdateEventUserRequest updatingRequest, Long userId, Long eventId) {
         String errorMessage = "Event with id=" + eventId + " and initiatorId=" + userId + " not exist";
-        EventFullDto eventFullDto = eventRepository.getEventByInitiatorIdAndId(userId, eventId)
+        return eventRepository.getEventByInitiatorIdAndId(userId, eventId)
                 .map(event -> {
                     Event updatedEvent = checkCurrentUserRequestAndFillUpdatingFields(updatingRequest, event);
                     return eventMapper.toEventFullDto(updatedEvent);
                 })
                 .orElseThrow(() -> new NoSuchElementException(errorMessage));
-        return eventFullDto;
     }
 
     /**
@@ -265,14 +264,14 @@ public class EventServiceImpl implements EventService {
     public EventRequestStatusUpdateResult changeRequestsStatusCurrentUser(EventRequestStatusUpdateRequest updateRequestStatus, Long userId, Long eventId) {
         //Проверка, что заявка принадлежит текущему пользователю
         Event event = eventRepository.findById(eventId)
-                .filter(someEvent -> someEvent.getInitiatorId() == userId)
+                .filter(someEvent -> someEvent.getInitiatorId().equals(userId))
                 .orElseThrow(() -> new NoSuchElementException("Event with id=" + eventId + " was not found"));
         //если для события лимит заявок равен 0 или отключена пре-модерация заявок, то подтверждение заявок не требуется
-        if (event.getParticipantLimit() == 0 || event.getRequestModeration() == false) {
+        if (event.getParticipantLimit() == 0 || !event.getRequestModeration()) {
             return new EventRequestStatusUpdateResult();
         }
         //нельзя подтвердить заявку, если уже достигнут лимит по заявкам на данное событие (Ожидается код ошибки 409)
-        if (event.getParticipantLimit() == event.getConfirmedRequests()) {
+        if (event.getParticipantLimit().equals(event.getConfirmedRequests())) {
             throw new LimitReachedException("The participant limit has been reached");
         }
 
@@ -283,7 +282,7 @@ public class EventServiceImpl implements EventService {
 
         //если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить
         for (Request request : requestsFromList) {
-            if (event.getParticipantLimit() != event.getConfirmedRequests()) {
+            if (!event.getParticipantLimit().equals(event.getConfirmedRequests())) {
                 Event eventWithLimit = event.toBuilder().confirmedRequests(event.getConfirmedRequests() + 1).build();
                 eventRepository.save(eventWithLimit);
                 Request requestWithChangedStatus = request.toBuilder().status(RequestStatus.valueOf(updateRequestStatus.getStatus())).build();
@@ -299,11 +298,9 @@ public class EventServiceImpl implements EventService {
                 rejectedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
             }
         }
-        EventRequestStatusUpdateResult result = EventRequestStatusUpdateResult.builder()
+        return EventRequestStatusUpdateResult.builder()
                 .confirmedRequests(confirmedRequests)
                 .rejectedRequests(rejectedRequests)
                 .build();
-
-        return result;
     }
 }

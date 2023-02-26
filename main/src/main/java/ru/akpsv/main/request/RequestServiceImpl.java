@@ -27,9 +27,9 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public ParticipationRequestDto create(Long userId, Long eventId) {
-        Event checkedEvent = eventRepository.findById(eventId).filter(event -> event.getInitiatorId() != userId)
+        Event checkedEvent = eventRepository.findById(eventId).filter(event -> !event.getInitiatorId().equals(userId))
                 .filter(event -> event.getState().equals(EventState.PUBLISHED))
-                .filter(event -> event.getParticipantLimit() != event.getConfirmedRequests())
+                .filter(event -> !event.getParticipantLimit().equals(event.getConfirmedRequests()))
                 .orElseThrow(() -> new ViolationOfRestrictionsException("Initiator of event cannot to add a request"));
 
         Request request = Request.builder()
@@ -51,7 +51,7 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public List<ParticipationRequestDto> getRequestsOfCurrentUser(Long userId) {
         return requestRepository.getRequestsByRequesterId(userId).stream()
-                .filter(request -> eventRepository.findById(request.getEventId()).get().getInitiatorId() != userId)
+                .filter(request -> !eventRepository.findById(request.getEventId()).get().getInitiatorId().equals(userId))
                 .map(RequestMapper::toParticipationRequestDto)
                 .collect(Collectors.toList());
     }
@@ -59,7 +59,7 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public ParticipationRequestDto cancelOwnRequest(Long userId, Long requestId) {
         return requestRepository.findById(requestId)
-                .filter(request -> request.getRequesterId() == userId)
+                .filter(request -> request.getRequesterId().equals(userId))
                 .map(request -> {
                     request = request.toBuilder().status(RequestStatus.CANCELED).build();
                     return RequestMapper.toParticipationRequestDto(request);
