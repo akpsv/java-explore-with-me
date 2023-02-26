@@ -1,6 +1,6 @@
 package ru.akpsv.main.event.dto;
 
-import lombok.*;
+import lombok.Builder;
 import ru.akpsv.main.event.model.Location;
 
 import javax.validation.constraints.Max;

@@ -2,7 +2,8 @@ package ru.akpsv.main.event.model;
 
 import lombok.*;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import javax.validation.constraints.NotBlank;
 
 @Embeddable

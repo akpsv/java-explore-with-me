@@ -3,7 +3,6 @@ package ru.akpsv.main.event;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ru.akpsv.main.event.dto.EventFullDto;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
 import ru.akpsv.main.event.model.Event_;
@@ -16,7 +15,9 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -52,7 +53,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        if (params.getRangeStart().isPresent() && params.getRangeEnd().isPresent()){
+        if (params.getRangeStart().isPresent() && params.getRangeEnd().isPresent()) {
             LocalDateTime start = LocalDateTime.parse(params.getRangeStart().get(), formatter);
             LocalDateTime end = LocalDateTime.parse(params.getRangeEnd().get(), formatter);
             Predicate rangeOfDateTime = cb.between(fromEvent.get(Event_.EVENT_DATE), start, end);
@@ -105,7 +106,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
         return resultList;
     }
 
-    default Event getFullEventInfoByUser(EntityManager em, Long userId, Long eventId){
+    default Event getFullEventInfoByUser(EntityManager em, Long userId, Long eventId) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Event> cq = cb.createQuery(Event.class);
         Root<Event> fromEvent = cq.from(Event.class);

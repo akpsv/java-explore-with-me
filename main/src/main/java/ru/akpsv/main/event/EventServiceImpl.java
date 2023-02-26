@@ -36,7 +36,7 @@ public class EventServiceImpl implements EventService {
     private final EventMapper eventMapper;
     @PersistenceContext
     EntityManager em;
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public Optional<EventFullDto> create(Long userId, NewEventDto newEvent) {

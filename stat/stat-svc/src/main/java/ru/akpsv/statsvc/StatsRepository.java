@@ -31,7 +31,7 @@ public interface StatsRepository extends JpaRepository<Request, Long> {
      * @return - список подходящих запросов
      */
     default Optional<List<StatDtoOut>> getStatDtoByParameters(EntityManager entityManager, LocalDateTime startDateTime,
-                                                    LocalDateTime endDateTime, String[] uris, boolean unique) {
+                                                              LocalDateTime endDateTime, String[] uris, boolean unique) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
         Root<Request> fromRequests = cq.from(Request.class);
@@ -42,10 +42,10 @@ public interface StatsRepository extends JpaRepository<Request, Long> {
 
         if (unique) {
             //Подсчитать уникальные ip в группе одинаковых uri
-            cq.multiselect(fromRequests.get(Request_.APP),fromRequests.get(Request_.URI), cb.countDistinct(fromRequests.get(Request_.IP)));
+            cq.multiselect(fromRequests.get(Request_.APP), fromRequests.get(Request_.URI), cb.countDistinct(fromRequests.get(Request_.IP)));
         } else {
             //Подсчитать количество uri в группе одинаковых
-            cq.multiselect(fromRequests.get(Request_.APP), fromRequests.get(Request_.URI), cb.count( fromRequests.get(Request_.URI)));
+            cq.multiselect(fromRequests.get(Request_.APP), fromRequests.get(Request_.URI), cb.count(fromRequests.get(Request_.URI)));
         }
         TypedQuery<Tuple> query = entityManager.createQuery(cq);
         List<Tuple> resultList = query.getResultList();

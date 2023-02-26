@@ -40,7 +40,7 @@ public class RequestServiceImpl implements RequestService {
 
         if (checkedEvent.getRequestModeration().equals(false)) {
             request = request.toBuilder().status(RequestStatus.CONFIRMED).build();
-            checkedEvent=checkedEvent.toBuilder().confirmedRequests(checkedEvent.getConfirmedRequests()+1).build();
+            checkedEvent = checkedEvent.toBuilder().confirmedRequests(checkedEvent.getConfirmedRequests() + 1).build();
             eventRepository.save(checkedEvent);
         }
 

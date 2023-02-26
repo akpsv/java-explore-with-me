@@ -40,7 +40,7 @@ class EventServiceImplTest {
         Event updatingEvent = TestHelper.createEvent(1L);
 
         //Действия
-        Event actualUpdatedEvent = eventService.checkAdminRequestAndFillUpdatingFilds(requestWitnPublishEvent, updatingEvent) ;      //Проверка
+        Event actualUpdatedEvent = eventService.checkAdminRequestAndFillUpdatingFilds(requestWitnPublishEvent, updatingEvent);      //Проверка
         //Проверка
         org.hamcrest.MatcherAssert.assertThat(actualUpdatedEvent.getState(), Matchers.equalTo(EventState.PUBLISHED));
     }

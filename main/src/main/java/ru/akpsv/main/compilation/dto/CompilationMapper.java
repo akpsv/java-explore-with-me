@@ -1,6 +1,5 @@
 package ru.akpsv.main.compilation.dto;
 
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.akpsv.main.compilation.Compilation;
@@ -17,8 +16,9 @@ import java.util.stream.Collectors;
 public class CompilationMapper {
     private static EventRepository eventRepository;
     private static EventMapper eventMapper;
+
     @Autowired
-    private CompilationMapper(EventRepository eventRepository, EventMapper eventMapper){
+    private CompilationMapper(EventRepository eventRepository, EventMapper eventMapper) {
         CompilationMapper.eventRepository = eventRepository;
         CompilationMapper.eventMapper = eventMapper;
     }

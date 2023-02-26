@@ -11,7 +11,7 @@ import javax.persistence.criteria.Root;
 import java.util.List;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
-    default List<Category> get(EntityManager em, Integer from, Integer size){
+    default List<Category> get(EntityManager em, Integer from, Integer size) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Category> cq = cb.createQuery(Category.class);
         Root<Category> fromCategory = cq.from(Category.class);

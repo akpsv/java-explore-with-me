@@ -10,7 +10,6 @@ import ru.akpsv.main.user.model.User;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;

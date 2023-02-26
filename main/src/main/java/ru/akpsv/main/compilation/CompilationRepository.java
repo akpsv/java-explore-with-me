@@ -2,7 +2,6 @@ package ru.akpsv.main.compilation;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ru.akpsv.main.compilation.dto.CompilationDto;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -14,7 +13,7 @@ import java.util.List;
 
 @Repository
 public interface CompilationRepository extends JpaRepository<Compilation, Long> {
-    default List<Compilation> getCompilations(EntityManager em, Boolean pinned, Integer from, Integer size){
+    default List<Compilation> getCompilations(EntityManager em, Boolean pinned, Integer from, Integer size) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Compilation> cq = cb.createQuery(Compilation.class);
         Root<Compilation> fromCompilation = cq.from(Compilation.class);

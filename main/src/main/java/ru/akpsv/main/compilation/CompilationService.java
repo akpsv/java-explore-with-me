@@ -9,7 +9,9 @@ import java.util.Optional;
 
 public interface CompilationService {
     CompilationDto create(NewCompilationDto compilation);
+
     Optional<List<Compilation>> update(long compId);
+
     void deleteById(Long compId);
 
     CompilationDto getCompilationById(Long compId);

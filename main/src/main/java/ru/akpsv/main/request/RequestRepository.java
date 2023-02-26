@@ -17,9 +17,10 @@ import java.util.List;
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
     List<Request> getRequestsByRequesterId(Long userId);
+
     List<Request> getRequestsByEventId(Long eventId);
 
-    default List<Request> getRequestsFromList(EntityManager em, Long[] requestIds, Long userId, Long eventId){
+    default List<Request> getRequestsFromList(EntityManager em, Long[] requestIds, Long userId, Long eventId) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Request> cq = cb.createQuery(Request.class);
         Root<Request> fromRequest = cq.from(Request.class);

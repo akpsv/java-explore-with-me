@@ -4,7 +4,6 @@ import lombok.*;
 import ru.akpsv.main.event.model.Event;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 

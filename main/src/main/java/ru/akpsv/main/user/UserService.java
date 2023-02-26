@@ -10,6 +10,8 @@ import java.util.Optional;
 
 public interface UserService {
     Optional<List<User>> getUsersByIds(Long[] ids, Integer from, Integer size);
+
     Optional<UserDto> create(NewUserRequest newUser);
+
     void deleteById(Long userId) throws NoSuchElementException;
 }

@@ -1,14 +1,12 @@
 package ru.akpsv.main.event.model;
 
 import lombok.*;
-import org.aspectj.lang.annotation.Before;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -37,7 +35,7 @@ public class Event {
     private Long categoryId;
 
     @Column(name = "confirmed_requests")
-    private Long confirmedRequests ; //Количество одобренных заявок на участие в данном событии TODO:(Заполняется в процессе работы)
+    private Long confirmedRequests; //Количество одобренных заявок на участие в данном событии TODO:(Заполняется в процессе работы)
 
     @CreationTimestamp
     @Column(name = "created_on")

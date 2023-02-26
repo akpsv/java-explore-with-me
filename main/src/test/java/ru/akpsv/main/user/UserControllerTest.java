@@ -11,7 +11,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.akpsv.TestHelper;
 import ru.akpsv.main.error.ErrorHandler;
@@ -27,14 +26,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
+    private final ObjectMapper mapper = new ObjectMapper();
     @Mock
     private UserService stubUserService;
-
     @InjectMocks
     private UserController userController;
-
-    private final ObjectMapper mapper = new ObjectMapper();
-
     private MockMvc mvc;
 
     @BeforeEach
@@ -94,7 +90,7 @@ class UserControllerTest {
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(400));
+                .andExpect(status().is(409));
     }
 
     @Test

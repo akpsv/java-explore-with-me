@@ -9,7 +9,7 @@ public class CategoryMapper {
                 .build();
     }
 
-    public static Category toCategory(CategoryDto categroDto){
+    public static Category toCategory(CategoryDto categroDto) {
         return Category.builder()
                 .id(categroDto.getId())
                 .name(categroDto.getName())

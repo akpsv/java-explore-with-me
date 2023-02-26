@@ -37,6 +37,7 @@ public class CategoryController {
     public List<Category> get(@RequestParam(defaultValue = "0") Integer from, @RequestParam(defaultValue = "10") Integer size) {
         return categoryService.get(from, size);
     }
+
     @GetMapping("/categories/{catId}")
     public Category getCategoryById(@PathVariable Long catId) {
         return categoryService.getCategoryById(catId);

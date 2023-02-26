@@ -6,16 +6,13 @@ import ru.akpsv.main.category.CategoryRepository;
 import ru.akpsv.main.category.dto.CategoryDto;
 import ru.akpsv.main.category.model.Category;
 import ru.akpsv.main.event.model.Event;
-import ru.akpsv.main.event.model.Location;
 import ru.akpsv.main.user.UserRepository;
 import ru.akpsv.main.user.dto.UserMapper;
 import ru.akpsv.main.user.dto.UserShortDto;
 import ru.akpsv.main.user.model.User;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 @Service
 public class EventMapper {
@@ -23,10 +20,10 @@ public class EventMapper {
     private CategoryRepository categoryRepository;
     @Autowired
     private UserRepository userRepository;
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 
-    public Event toEvent(NewEventDto newEvent, Long initiatorId){
+    public Event toEvent(NewEventDto newEvent, Long initiatorId) {
         return Event.builder()
                 .annotation(newEvent.getAnnotation())
                 .categoryId(newEvent.getCategory())
@@ -42,7 +39,7 @@ public class EventMapper {
                 .build();
     }
 
-    public EventFullDto toEventFullDto(Event event){
+    public EventFullDto toEventFullDto(Event event) {
         Category category = categoryRepository.findById(event.getCategoryId()).get();
         CategoryDto categoryDto = CategoryDto.builder()
                 .id(category.getId())
@@ -52,7 +49,7 @@ public class EventMapper {
         User user = userRepository.findById(event.getInitiatorId()).get();
         UserShortDto userShortDto = UserMapper.toUserShotDto(user);
         String publishedOn;
-        if ( event.getPublishedOn() == null) {
+        if (event.getPublishedOn() == null) {
             publishedOn = "";
         } else {
             publishedOn = event.getPublishedOn().format(formatter);

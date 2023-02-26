@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
                 .ifPresentOrElse(user -> userRepository.deleteById(userId),
                         () -> {
                             String exceptionMessage = "User with id=" + userId + " was not found";
-                            throw new NoSuchElementException(exceptionMessage );
+                            throw new NoSuchElementException(exceptionMessage);
                         });
     }
 }

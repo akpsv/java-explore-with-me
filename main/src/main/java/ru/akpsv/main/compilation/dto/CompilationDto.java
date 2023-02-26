@@ -2,12 +2,10 @@ package ru.akpsv.main.compilation.dto;
 
 import lombok.*;
 import ru.akpsv.main.event.dto.EventShortDto;
-import ru.akpsv.main.event.model.Event;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Подборка событий

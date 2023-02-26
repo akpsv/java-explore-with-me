@@ -14,10 +14,11 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class CategoryServiceImpl implements CategoryService{
+public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     @PersistenceContext
     EntityManager em;
+
     @Override
     public Optional<CategoryDto> create(NewCategoryDto newCategory) {
         Category category = CategoryMapper.toCategory(newCategory);

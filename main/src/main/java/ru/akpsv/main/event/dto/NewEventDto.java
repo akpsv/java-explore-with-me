@@ -2,7 +2,6 @@ package ru.akpsv.main.event.dto;
 
 import lombok.Builder;
 import lombok.Getter;
-import ru.akpsv.main.category.dto.CategoryDto;
 import ru.akpsv.main.event.model.Location;
 
 import javax.validation.constraints.NotBlank;

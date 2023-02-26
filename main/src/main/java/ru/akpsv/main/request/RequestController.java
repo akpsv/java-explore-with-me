@@ -37,10 +37,9 @@ public class RequestController {
     }
 
     @PatchMapping("/{requestId}/cancel")
-    public ParticipationRequestDto cancelOwnRequest(@PathVariable Long userId, @PathVariable Long requestId){
-        return requestService.cancelOwnRequest(userId,requestId);
+    public ParticipationRequestDto cancelOwnRequest(@PathVariable Long userId, @PathVariable Long requestId) {
+        return requestService.cancelOwnRequest(userId, requestId);
     }
-
 
 
 }

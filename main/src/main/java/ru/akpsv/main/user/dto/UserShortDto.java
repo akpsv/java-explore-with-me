@@ -10,6 +10,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class UserShortDto {
-     private Long id;
-     private String name;
+    private Long id;
+    private String name;
 }
