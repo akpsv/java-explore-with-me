@@ -4,22 +4,43 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>explore-with-me</artifactId>
-        <groupId>ru.practicum</groupId>
+        <groupId>ru.akpsv</groupId>
         <version>0.0.1-SNAPSHOT</version>
-        <!--        <groupId>org.springframework.boot</groupId>-->
-<!--        <artifactId>spring-boot-starter-parent</artifactId>-->
-<!--        <version>2.7.8</version>-->
-<!--        <relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
+        <relativePath>../pom.xml</relativePath>
+
     </parent>
     <groupId>ru.akpsv</groupId>
     <artifactId>main</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+
     <name>main</name>
     <description>main</description>
+
     <properties>
         <java.version>11</java.version>
     </properties>
+
     <dependencies>
+<!--        <dependency>-->
+<!--            <groupId>ru.akpsv</groupId>-->
+<!--            <artifactId>stat</artifactId>-->
+<!--            <version>0.0.1-SNAPSHOT</version>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>ru.akpsv</groupId>
+            <artifactId>stat-dto</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>ru.akpsv</groupId>
+            <artifactId>stat-client</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-jpamodelgen</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -61,10 +82,24 @@
 
     <build>
         <plugins>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <configuration>
+<!--                    <requiresUnpack>-->
+<!--                        <dependency>-->
+<!--                            <groupId>org.jruby</groupId>-->
+<!--                            <artifactId>jruby-complete</artifactId>-->
+<!--                        </dependency>-->
+<!--                    </requiresUnpack>-->
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
