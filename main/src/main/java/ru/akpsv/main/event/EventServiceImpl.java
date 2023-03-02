@@ -1,11 +1,11 @@
 package ru.akpsv.main.event;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.stereotype.Service;
-import ru.akpsv.dto.RequestDtoIn;
-import ru.akpsv.dto.statclient.RestClientService;
 import ru.akpsv.main.error.LimitReachedException;
 import ru.akpsv.main.error.ViolationOfRestrictionsException;
 import ru.akpsv.main.event.dto.*;
@@ -16,6 +16,8 @@ import ru.akpsv.main.request.dto.ParticipationRequestDto;
 import ru.akpsv.main.request.dto.RequestMapper;
 import ru.akpsv.main.request.model.Request;
 import ru.akpsv.main.request.model.RequestStatus;
+import ru.akpsv.statclient.RestClientService;
+import ru.akpsv.statdto.RequestDtoIn;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -28,6 +30,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
@@ -208,9 +211,13 @@ public class EventServiceImpl implements EventService {
         return updatingEvent;
     }
 
+    @Value("${main-svc.url}")
+    private String serverUrl;
+
     @Override
     public List<EventShortDto> getEventsByPublicParams(EventParamsForPublic params, HttpServletRequest request) {
-        RestClientService restClientService = new RestClientService("http://localhost:9090/", new RestTemplateBuilder());
+
+        RestClientService restClientService = new RestClientService(serverUrl, new RestTemplateBuilder());
         RequestDtoIn requestDtoIn = RequestDtoIn.builder()
                 .app("main-svc")
                 .uri(request.getRequestURI())
@@ -225,7 +232,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto getEventById(Long eventId, HttpServletRequest request) {
-        RestClientService restClientService = new RestClientService("http://localhost:9090/", new RestTemplateBuilder());
+        RestClientService restClientService = new RestClientService(serverUrl, new RestTemplateBuilder());
 
         RequestDtoIn requestDtoIn = RequestDtoIn.builder()
                 .app("main-svc")
@@ -263,10 +270,12 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventRequestStatusUpdateResult changeRequestsStatusCurrentUser(EventRequestStatusUpdateRequest updateRequestStatus, Long userId, Long eventId) {
         //Проверка, что заявка принадлежит текущему пользователю
+        log.debug("Проверка, что заявка принадлежит текущему пользователю");
         Event event = eventRepository.findById(eventId)
                 .filter(someEvent -> someEvent.getInitiatorId().equals(userId))
                 .orElseThrow(() -> new NoSuchElementException("Event with id=" + eventId + " was not found"));
         //если для события лимит заявок равен 0 или отключена пре-модерация заявок, то подтверждение заявок не требуется
+        log.debug("Проверка лимита заявок и пре-модерации");
         if (event.getParticipantLimit() == 0 || !event.getRequestModeration()) {
             return new EventRequestStatusUpdateResult();
         }
@@ -275,12 +284,14 @@ public class EventServiceImpl implements EventService {
             throw new LimitReachedException("The participant limit has been reached");
         }
 
+        log.debug("Получение заявок из репозитория");
         List<Request> requestsFromList = requestRepository.getRequestsFromList(em, updateRequestStatus.getRequestIds(), userId, eventId);
 
         List<ParticipationRequestDto> confirmedRequests = new ArrayList<>();
         List<ParticipationRequestDto> rejectedRequests = new ArrayList<>();
 
         //если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить
+        log.debug("Обработать заявки в соответствии с лимитом. Отклонение заявок которым не хватило разрешений.");
         for (Request request : requestsFromList) {
             if (!event.getParticipantLimit().equals(event.getConfirmedRequests())) {
                 Event eventWithLimit = event.toBuilder().confirmedRequests(event.getConfirmedRequests() + 1).build();
@@ -298,6 +309,7 @@ public class EventServiceImpl implements EventService {
                 rejectedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
             }
         }
+        log.debug("Вернуть список заявок");
         return EventRequestStatusUpdateResult.builder()
                 .confirmedRequests(confirmedRequests)
                 .rejectedRequests(rejectedRequests)

@@ -19,13 +19,25 @@
     <properties>
         <java.version>11</java.version>
     </properties>
+    <profiles>
+        <profile>
+            <id>mainDev</id>
+            <properties>
+                <activatedProperties>dev</activatedProperties>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>mainRev</id>
+            <properties>
+                <activatedProperties>rev</activatedProperties>
+            </properties>
+        </profile>
+    </profiles>
 
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>ru.akpsv</groupId>-->
-<!--            <artifactId>stat</artifactId>-->
-<!--            <version>0.0.1-SNAPSHOT</version>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>ru.akpsv</groupId>
             <artifactId>stat-dto</artifactId>
@@ -35,6 +47,12 @@
             <groupId>ru.akpsv</groupId>
             <artifactId>stat-client</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.zalando</groupId>
+            <artifactId>logbook-spring-boot-starter</artifactId>
+            <version>2.14.0</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -81,6 +99,7 @@
     </dependencies>
 
     <build>
+
         <plugins>
 
             <plugin>
@@ -94,12 +113,6 @@
                     </execution>
                 </executions>
                 <configuration>
-<!--                    <requiresUnpack>-->
-<!--                        <dependency>-->
-<!--                            <groupId>org.jruby</groupId>-->
-<!--                            <artifactId>jruby-complete</artifactId>-->
-<!--                        </dependency>-->
-<!--                    </requiresUnpack>-->
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
@@ -109,6 +122,13 @@
                 </configuration>
             </plugin>
         </plugins>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
     </build>
 
 </project>

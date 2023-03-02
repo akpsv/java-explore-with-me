@@ -1,6 +1,6 @@
 package ru.akpsv.statsvc;
 
-import ru.akpsv.dto.RequestDtoIn;
+import ru.akpsv.statdto.RequestDtoIn;
 import ru.akpsv.statsvc.model.Request;
 
 import java.time.LocalDateTime;

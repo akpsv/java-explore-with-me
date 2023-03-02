@@ -1,11 +1,13 @@
 package ru.akpsv.statsvc;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.akpsv.dto.RequestDtoIn;
-import ru.akpsv.dto.StatDtoOut;
+import ru.akpsv.statdto.RequestDtoIn;
+import ru.akpsv.statdto.StatDtoOut;
+import ru.akpsv.statsvc.model.Request;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -14,8 +16,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
-@RequiredArgsConstructor
+@Slf4j
 @RestController
+@RequiredArgsConstructor
 public class StatsController {
     private final StatsService statsService;
 
@@ -23,9 +26,11 @@ public class StatsController {
      * Сохранение информации о том, что на uri конкретного сервиса был отправлен запрос пользователем.
      * Название сервиса, uri и ip пользователя указаны в теле запроса.
      * */
-    @PostMapping("/hit")
+    @PostMapping("/hits")
     public ResponseEntity saveRequestInfo(@RequestBody RequestDtoIn requestDtoIn) {
-        statsService.save(requestDtoIn);
+        log.debug("Получен запрос на эндпоинт /hits. RequestDtoIn= {}", requestDtoIn);
+        Request savedReqeust = statsService.save(requestDtoIn);
+        log.debug("Данные сохранены в БД. Сохранённый запрос: {}", savedReqeust);
         return new ResponseEntity(HttpStatus.valueOf(201));
     }
 
@@ -56,3 +61,4 @@ public class StatsController {
         }
     }
 }
+

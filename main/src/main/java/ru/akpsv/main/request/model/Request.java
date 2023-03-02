@@ -39,5 +39,6 @@ public class Request {
     private Long requesterId;     //Идентификатор пользователя, отправившего заявку
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private RequestStatus status;      //Статус заявки. example: PENDING (может быть перечисление)
 }

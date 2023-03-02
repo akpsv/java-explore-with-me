@@ -1,6 +1,7 @@
 package ru.akpsv.main.event;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.akpsv.main.event.dto.*;
@@ -11,6 +12,7 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping
 @RequiredArgsConstructor
@@ -95,7 +97,9 @@ public class EventController {
                                                        HttpServletRequest request
     ) {
         EventParamsForPublic params = new EventParamsForPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
-        return eventService.getEventsByPublicParams(params, request);
+        log.debug("Вызов метода eventService.getEventsByPublicParams c параметрами: params= {}, reqeust={}", params, request);
+        List<EventShortDto> eventsByPublicParams = eventService.getEventsByPublicParams(params, request);
+        return eventsByPublicParams;
     }
 
     @GetMapping("/events/{id}")

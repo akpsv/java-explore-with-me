@@ -3,7 +3,7 @@ package ru.akpsv.statsvc;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import ru.akpsv.TestHelper;
-import ru.akpsv.dto.RequestDtoIn;
+import ru.akpsv.statdto.RequestDtoIn;
 import ru.akpsv.statsvc.model.Request;
 
 class StatsServiceImplTest {

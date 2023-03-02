@@ -1,7 +1,7 @@
-package ru.akpsv.dto.statclient;
+package ru.akpsv.statclient;
 
-import ru.akpsv.dto.RequestDtoIn;
-import ru.akpsv.dto.StatDtoOut;
+import ru.akpsv.statdto.RequestDtoIn;
+import ru.akpsv.statdto.StatDtoOut;
 
 public class TestHelper {
     //    public static Request createRequest(long id, String uri, String ip){

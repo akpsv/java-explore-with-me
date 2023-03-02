@@ -1,15 +1,22 @@
-package ru.akpsv.dto.statclient;
-
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
-@SpringBootTest
-class RestClientServiceTest {
-
-    private final RestClientService restClientService;
-
+//package ru.akpsv.dto.statclient;
+//
+//import lombok.RequiredArgsConstructor;
+//import org.hamcrest.Matchers;
+//import org.junit.jupiter.api.Test;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.boot.test.context.SpringBootTest;
+//import ru.akpsv.dto.RequestDtoIn;
+//
+//import java.util.Map;
+//
+//import static org.hamcrest.MatcherAssert.assertThat;
+//
+//@RequiredArgsConstructor(onConstructor_ = @Autowired)
+//@SpringBootTest
+//class RestClientServiceTest {
+//
+//    private final RestClientService restClientService;
+//
 //    @Test
 //    void getStatDtos_WhenCall_ReturnsListStatDtoOut() {
 //        //Подготовка
@@ -38,4 +45,4 @@ class RestClientServiceTest {
 //        assertThat(actualListSize, Matchers.equalTo(expectedListSize));
 //
 //    }
-}
+//}

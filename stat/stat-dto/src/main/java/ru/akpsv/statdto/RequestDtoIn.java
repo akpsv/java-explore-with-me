@@ -1,9 +1,10 @@
-package ru.akpsv.dto;
+package ru.akpsv.statdto;
 
 import lombok.*;
 
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)

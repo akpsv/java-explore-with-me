@@ -1,7 +1,7 @@
 package ru.akpsv;
 
-import ru.akpsv.dto.RequestDtoIn;
-import ru.akpsv.dto.StatDtoOut;
+import ru.akpsv.statdto.RequestDtoIn;
+import ru.akpsv.statdto.StatDtoOut;
 import ru.akpsv.statsvc.model.Request;
 
 import java.time.LocalDateTime;

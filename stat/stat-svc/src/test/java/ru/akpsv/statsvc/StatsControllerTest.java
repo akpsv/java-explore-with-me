@@ -12,8 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ru.akpsv.TestHelper;
-import ru.akpsv.dto.RequestDtoIn;
-import ru.akpsv.dto.StatDtoOut;
+import ru.akpsv.statdto.RequestDtoIn;
+import ru.akpsv.statdto.StatDtoOut;
 import ru.akpsv.statsvc.model.Request;
 
 import java.nio.charset.StandardCharsets;
@@ -53,7 +53,7 @@ class StatsControllerTest {
 
         //Действия
         //Проверка
-        mvc.perform(post("/hit")
+        mvc.perform(post("/hits")
                         .content(mapper.writeValueAsString(requestDtoIn))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)

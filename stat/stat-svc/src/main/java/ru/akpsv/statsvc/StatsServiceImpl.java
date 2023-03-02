@@ -2,8 +2,8 @@ package ru.akpsv.statsvc;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.akpsv.dto.RequestDtoIn;
-import ru.akpsv.dto.StatDtoOut;
+import ru.akpsv.statdto.RequestDtoIn;
+import ru.akpsv.statdto.StatDtoOut;
 import ru.akpsv.statsvc.model.Request;
 
 import javax.persistence.EntityManager;
@@ -24,8 +24,8 @@ public class StatsServiceImpl implements StatsService {
     private final EntityManager entityManager;
 
     @Override
-    public void save(RequestDtoIn requestDtoIn) {
-        statsRepository.save(RequestMapper.toRequest(requestDtoIn));
+    public Request save(RequestDtoIn requestDtoIn) {
+        return  statsRepository.save(RequestMapper.toRequest(requestDtoIn));
     }
 
     @Override
