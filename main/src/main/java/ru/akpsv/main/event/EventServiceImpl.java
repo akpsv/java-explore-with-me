@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -36,24 +37,27 @@ import java.util.stream.Collectors;
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
-    private final EventMapper eventMapper;
+//    private final EventMapper eventMapper;
     @PersistenceContext
     EntityManager em;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
-    public Optional<EventFullDto> create(Long userId, NewEventDto newEvent) {
-        Event event = eventMapper.toEvent(newEvent, userId);
-        event = event.toBuilder().state(EventState.PENDING).build();
-        Event savedEvent = eventRepository.save(event);
-        EventFullDto eventFullDto = eventMapper.toEventFullDto(savedEvent);
-        return Optional.of(eventFullDto);
+    public EventFullDto create(Long userId, NewEventDto newEvent) {
+        Event event = EventMapper.toEvent(newEvent, userId)
+                .toBuilder()
+                .state(EventState.PENDING)
+                .build();
+        return Stream.of(event)
+                .map(eventRepository::save)
+                .map(EventMapper::toEventFullDto)
+                .findFirst().get();
     }
 
     @Override
     public Optional<List<EventShortDto>> getEventsByUser(Long userId, Integer from, Integer size) {
         List<EventShortDto> groupOfEventShortDtos = eventRepository.getEventsByUser(em, userId, from, size).stream()
-                .map(eventMapper::toEventShortDto)
+                .map(EventMapper::toEventShortDto)
                 .collect(Collectors.toList());
         return Optional.of(groupOfEventShortDtos);
     }
@@ -61,7 +65,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventFullDto> getEventsByAdminParams(EventParamsForAdmin params) {
         return eventRepository.getEventsByAdminParams(em, params).stream()
-                .map(eventMapper::toEventFullDto)
+                .map(EventMapper::toEventFullDto)
                 .collect(Collectors.toList());
     }
 
@@ -72,7 +76,7 @@ public class EventServiceImpl implements EventService {
 
         updatingEvent = checkAdminRequestAndFillUpdatingFilds(updatingRequest, updatingEvent);
         Event savedUpdatedEvent = eventRepository.save(updatingEvent);
-        return eventMapper.toEventFullDto(savedUpdatedEvent);
+        return EventMapper.toEventFullDto(savedUpdatedEvent);
     }
 
     @Override
@@ -81,7 +85,7 @@ public class EventServiceImpl implements EventService {
         return eventRepository.getEventByInitiatorIdAndId(userId, eventId)
                 .map(event -> {
                     Event updatedEvent = checkCurrentUserRequestAndFillUpdatingFields(updatingRequest, event);
-                    return eventMapper.toEventFullDto(updatedEvent);
+                    return EventMapper.toEventFullDto(updatedEvent);
                 })
                 .orElseThrow(() -> new NoSuchElementException(errorMessage));
     }
@@ -226,7 +230,7 @@ public class EventServiceImpl implements EventService {
         int post = restClientService.post(requestDtoIn);
 
         return eventRepository.getEventsByPublicParams(em, params).stream()
-                .map(eventMapper::toEventShortDto)
+                .map(EventMapper::toEventShortDto)
                 .collect(Collectors.toList());
     }
 
@@ -242,14 +246,14 @@ public class EventServiceImpl implements EventService {
         int post = restClientService.post(requestDtoIn);
 
         return eventRepository.findById(eventId)
-                .map(eventMapper::toEventFullDto)
+                .map(EventMapper::toEventFullDto)
                 .orElseThrow(() -> new NoSuchElementException("Event not foun"));
     }
 
     @Override
     public EventFullDto getFullEventInfoByUser(Long userId, Long eventId) {
         Event event = eventRepository.getFullEventInfoByUser(em, userId, eventId);
-        return eventMapper.toEventFullDto(event);
+        return EventMapper.toEventFullDto(event);
     }
 
     @Override

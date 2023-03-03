@@ -25,7 +25,7 @@ public class EventController {
     @PostMapping("/users/{userId}/events")
     @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto create(@PathVariable Long userId, @Valid @RequestBody NewEventDto newEvent) {
-        return eventService.create(userId, newEvent).get();
+        return eventService.create(userId, newEvent);
     }
 
     @GetMapping("/users/{userId}/events")
@@ -72,10 +72,9 @@ public class EventController {
                                                      @RequestParam Optional<String> rangeEnd,
                                                      @RequestParam(defaultValue = "0") Integer from,
                                                      @RequestParam(defaultValue = "10") Integer size) {
-        EventParamsForAdmin params = new EventParamsForAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
 
-        List<EventFullDto> eventsByParams = eventService.getEventsByAdminParams(params);
-        return eventsByParams;
+        EventParamsForAdmin params = new EventParamsForAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
+        return eventService.getEventsByAdminParams(params);
     }
 
     @PatchMapping("/admin/events/{eventId}")
@@ -83,7 +82,10 @@ public class EventController {
         return eventService.updateEventByAdmin(updatingRequest, eventId);
     }
 
-    //Public: События. Публичный АПИ для работы с событиями
+    /**
+     * Public: События. Публичный АПИ для работы с событиями
+     */
+
     @GetMapping("/events")
     public List<EventShortDto> getPublicEventsByParams(@RequestParam Optional<String> text,
                                                        @RequestParam Optional<List<Long>> categories,

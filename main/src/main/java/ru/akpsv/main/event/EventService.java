@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface EventService {
-    Optional<EventFullDto> create(Long userId, NewEventDto newEvent);
+    EventFullDto create(Long userId, NewEventDto newEvent);
 
     Optional<List<EventShortDto>> getEventsByUser(Long userId, Integer from, Integer size);
 

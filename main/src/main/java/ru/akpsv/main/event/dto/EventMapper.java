@@ -16,20 +16,23 @@ import java.time.format.DateTimeFormatter;
 
 @Service
 public class EventMapper {
-    @Autowired
-    private CategoryRepository categoryRepository;
-    @Autowired
-    private UserRepository userRepository;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static CategoryRepository categoryRepository;
+    private static UserRepository userRepository;
+    private static DateTimeFormatter formatter= DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    @Autowired
+    private EventMapper(CategoryRepository categoryRepository, UserRepository userRepository){
+        EventMapper.categoryRepository = categoryRepository;
+        EventMapper.userRepository = userRepository;
+    }
 
-    public Event toEvent(NewEventDto newEvent, Long initiatorId) {
+    public static Event toEvent(NewEventDto newEvent, Long initiatorId) {
         return Event.builder()
                 .annotation(newEvent.getAnnotation())
                 .categoryId(newEvent.getCategory())
                 .description(newEvent.getDescription())
                 .initiatorId(initiatorId)
-                .eventDate(LocalDateTime.parse(newEvent.getEventDate(), formatter))
+                .eventDate(LocalDateTime.parse(newEvent.getEventDate(), EventMapper.formatter))
                 .location(newEvent.getLocation())
                 .title(newEvent.getTitle())
                 .paid(newEvent.getPaid())
@@ -39,7 +42,7 @@ public class EventMapper {
                 .build();
     }
 
-    public EventFullDto toEventFullDto(Event event) {
+    public static EventFullDto toEventFullDto(Event event) {
         Category category = categoryRepository.findById(event.getCategoryId()).get();
         CategoryDto categoryDto = CategoryDto.builder()
                 .id(category.getId())
@@ -74,7 +77,7 @@ public class EventMapper {
                 .build();
     }
 
-    public EventShortDto toEventShortDto(Event event) {
+    public static EventShortDto toEventShortDto(Event event) {
         Category category = categoryRepository.findById(event.getCategoryId()).get();
         CategoryDto categoryDto = CategoryDto.builder()
                 .id(category.getId())

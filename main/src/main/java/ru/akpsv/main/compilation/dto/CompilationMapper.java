@@ -15,12 +15,10 @@ import java.util.stream.Collectors;
 @Service
 public class CompilationMapper {
     private static EventRepository eventRepository;
-    private static EventMapper eventMapper;
 
     @Autowired
-    private CompilationMapper(EventRepository eventRepository, EventMapper eventMapper) {
+    private CompilationMapper(EventRepository eventRepository) {
         CompilationMapper.eventRepository = eventRepository;
-        CompilationMapper.eventMapper = eventMapper;
     }
 
 
@@ -36,7 +34,7 @@ public class CompilationMapper {
 
     public static CompilationDto toCompilationDto(Compilation compilation) {
         List<EventShortDto> eventShortDtos = compilation.getEvents().stream()
-                .map(eventMapper::toEventShortDto)
+                .map(EventMapper::toEventShortDto)
                 .collect(Collectors.toList());
         return CompilationDto.builder()
                 .id(compilation.getId())

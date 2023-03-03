@@ -1,6 +1,7 @@
 package ru.akpsv;
 
 import ru.akpsv.main.category.dto.CategoryDto;
+import ru.akpsv.main.category.model.Category;
 import ru.akpsv.main.compilation.Compilation;
 import ru.akpsv.main.compilation.dto.NewCompilationDto;
 import ru.akpsv.main.event.dto.EventFullDto;
@@ -20,6 +21,7 @@ import java.util.Collections;
 import java.util.Set;
 
 public class TestHelper {
+
     public static NewUserRequest createNewUserRequest(String email) {
         return NewUserRequest.builder()
                 .name("user")
@@ -64,6 +66,7 @@ public class TestHelper {
                 .annotation("annotaion")
                 .categoryId(1L)
                 .description("description")
+                .createdOn(LocalDateTime.parse("2024-10-31 17:10:05", formatter))
                 .eventDate(LocalDateTime.parse("2024-12-31 17:10:05", formatter))
                 .publishedOn(LocalDateTime.parse("2024-12-31 15:10:05", formatter))
                 .location(new Location(37.617698, 55.755864))
@@ -87,7 +90,8 @@ public class TestHelper {
                 .annotation("annotaion")
                 .category(CategoryDto.builder().build())
                 .description("description")
-                .eventDate("2024-12-31 17:15:05")
+                .createdOn("2024-10-31 17:10:05")
+                .eventDate("2024-12-31 17:10:05")
                 .publishedOn("2024-12-31 15:10:05")
                 .location(new Location(37.617698, 55.755864))
                 .initiator(UserShortDto.builder().build())
@@ -114,6 +118,13 @@ public class TestHelper {
                 .title("title")
                 .pinned(false)
                 .events(Collections.emptySet())
+                .build();
+    }
+
+    public static Category createCategory() {
+        return Category.builder()
+                .id(1L)
+                .name("category")
                 .build();
     }
 }

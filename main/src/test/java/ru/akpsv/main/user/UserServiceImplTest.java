@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.akpsv.TestHelper;
+import ru.akpsv.main.event.dto.EventMapper;
 import ru.akpsv.main.user.dto.NewUserRequest;
 import ru.akpsv.main.user.dto.UserDto;
 import ru.akpsv.main.user.model.User;
@@ -26,6 +27,7 @@ class UserServiceImplTest {
 
     @InjectMocks
     UserServiceImpl userService;
+
 
     @Test
     void create_NewUserRequest_ReturnsUserDto() {
