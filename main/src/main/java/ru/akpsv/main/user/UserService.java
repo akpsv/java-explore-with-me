@@ -6,12 +6,11 @@ import ru.akpsv.main.user.model.User;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 public interface UserService {
-    Optional<List<User>> getUsersByIds(Long[] ids, Integer from, Integer size);
+    UserDto create(NewUserRequest newUser);
 
-    Optional<UserDto> create(NewUserRequest newUser);
+    List<User> getUsersByIds(List<Long> ids, Integer from, Integer size);
 
     void deleteById(Long userId) throws NoSuchElementException;
 }

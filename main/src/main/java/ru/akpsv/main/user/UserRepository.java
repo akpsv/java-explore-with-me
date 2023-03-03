@@ -16,7 +16,7 @@ import java.util.List;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    default List<User> getUsersByIds(EntityManager em, Long[] ids, Integer from, Integer size) {
+    default List<User> getUsersByIds(EntityManager em, List<Long> ids, Integer from, Integer size) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<User> cq = cb.createQuery(User.class);
         Root<User> fromUser = cq.from(User.class);

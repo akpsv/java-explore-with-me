@@ -41,7 +41,7 @@ class UserRepositoryTest {
         NewUserRequest newUserRequest2 = TestHelper.createNewUserRequest("user2@email.ru");
         User savedUser1 = userRepository.save(UserMapper.toUser(newUserRequest1));
         User savedUser2 = userRepository.save(UserMapper.toUser(newUserRequest2));
-        Long[] ids = {savedUser1.getId(), savedUser2.getId()};
+        List<Long> ids = List.of(savedUser1.getId(), savedUser2.getId());
         Integer expectedNumberOfUsers = 2;
         //Действия
         List<User> usersByIds = userRepository.getUsersByIds(em, ids, 0, 10);

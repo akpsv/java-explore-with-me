@@ -18,19 +18,21 @@ import ru.akpsv.main.user.dto.NewUserRequest;
 import ru.akpsv.main.user.dto.UserDto;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Optional;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
-    private final ObjectMapper mapper = new ObjectMapper();
     @Mock
     private UserService stubUserService;
     @InjectMocks
     private UserController userController;
+    private final ObjectMapper mapper = new ObjectMapper();
     private MockMvc mvc;
 
     @BeforeEach
@@ -42,12 +44,12 @@ class UserControllerTest {
     }
 
     @Test
-    void createUser_NewUserRequest_StatusCode201() throws Exception {
+    void createUser_NewUserRequest_ReturnsStatusCode201() throws Exception {
         //Подготовка
         String userEmail = "user@email.ru";
         NewUserRequest newUserRequest = TestHelper.createNewUserRequest(userEmail);
         UserDto userDto = TestHelper.createUserDto(1L, userEmail);
-        Mockito.when(stubUserService.create(Mockito.any())).thenReturn(Optional.of(userDto));
+        Mockito.when(stubUserService.create(Mockito.any())).thenReturn(userDto);
 
         //Действия
         //Проверка
@@ -60,7 +62,7 @@ class UserControllerTest {
     }
 
     @Test
-    void createUser_hibernateConstraintViolationException_StatusCode409() throws Exception {
+    void createUser_hibernateConstraintViolationException_ReturnsStatusCode409() throws Exception {
         //Подготовка
         String userEmail = "user@email.ru";
         NewUserRequest newUserRequest = TestHelper.createNewUserRequest(userEmail);
@@ -77,7 +79,7 @@ class UserControllerTest {
     }
 
     @Test
-    void createUser_javaxConstraintViolationException_StatusCode400() throws Exception {
+    void createUser_javaxConstraintViolationException_ReturnsStatusCode409() throws Exception {
         //Подготовка
         String userEmail = "user@email.ru";
         NewUserRequest newUserRequest = TestHelper.createNewUserRequest(userEmail);
@@ -104,6 +106,15 @@ class UserControllerTest {
     }
 
     @Test
-    void testDeleteUserById() {
+    void getUsersByIds_UserIds_ReturnsGroupOfUsers() throws Exception {
+        //Подготовка
+        Mockito.when(stubUserService.getUsersByIds(Mockito.any(), Mockito.anyInt(), Mockito.anyInt())).thenReturn(Collections.emptyList());
+        //Действия и проверка
+        mvc.perform(get("/admin/users")
+                        .param("ids", "1")
+                        .param("from", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size()", is(0)));
     }
 }
