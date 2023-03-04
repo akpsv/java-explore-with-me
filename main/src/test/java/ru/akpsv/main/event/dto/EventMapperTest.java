@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.akpsv.main.category.CategoryRepository;
-import ru.akpsv.main.user.UserRepository;
+import ru.akpsv.main.user.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
 class EventMapperTest {

@@ -6,7 +6,7 @@ import ru.akpsv.main.category.CategoryRepository;
 import ru.akpsv.main.category.dto.CategoryDto;
 import ru.akpsv.main.category.model.Category;
 import ru.akpsv.main.event.model.Event;
-import ru.akpsv.main.user.UserRepository;
+import ru.akpsv.main.user.repository.UserRepository;
 import ru.akpsv.main.user.dto.UserMapper;
 import ru.akpsv.main.user.dto.UserShortDto;
 import ru.akpsv.main.user.model.User;

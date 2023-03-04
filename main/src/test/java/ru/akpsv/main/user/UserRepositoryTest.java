@@ -7,9 +7,8 @@ import ru.akpsv.TestHelper;
 import ru.akpsv.main.user.dto.NewUserRequest;
 import ru.akpsv.main.user.dto.UserMapper;
 import ru.akpsv.main.user.model.User;
+import ru.akpsv.main.user.repository.UserRepository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,8 +19,6 @@ import static org.hamcrest.Matchers.not;
 class UserRepositoryTest {
     @Autowired
     UserRepository userRepository;
-    @PersistenceContext
-    EntityManager em;
 
     @Test
     void save_UserWithoutId_ReturnsUserWitnId() {
@@ -44,7 +41,7 @@ class UserRepositoryTest {
         List<Long> ids = List.of(savedUser1.getId(), savedUser2.getId());
         Integer expectedNumberOfUsers = 2;
         //Действия
-        List<User> usersByIds = userRepository.getUsersByIds(em, ids, 0, 10);
+        List<User> usersByIds = userRepository.getUsersByIds(ids, 0, 10);
         Integer actualNumberOfUsers = usersByIds.size();
         //Проверка
         assertThat(actualNumberOfUsers, equalTo(expectedNumberOfUsers));

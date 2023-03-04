@@ -29,8 +29,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
         cq.select(fromEvent).where(cb.equal(fromEvent.get(Event_.INITIATOR_ID), userId));
         TypedQuery<Event> query = em.createQuery(cq);
         query.setFirstResult(from).setMaxResults(size);
-        List<Event> resultList = query.getResultList();
-        return resultList;
+        return query.getResultList();
     }
 
     default List<Event> getEventsByAdminParams(EntityManager em, EventParamsForAdmin params) {

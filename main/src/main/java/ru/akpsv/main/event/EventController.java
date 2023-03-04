@@ -32,7 +32,7 @@ public class EventController {
     public List<EventShortDto> getEventsByUser(@PathVariable Long userId,
                                                @RequestParam(defaultValue = "0") Integer from,
                                                @RequestParam(defaultValue = "10") Integer size) {
-        return eventService.getEventsByUser(userId, from, size).get();
+        return eventService.getEventsByUser(userId, from, size);
     }
 
     @GetMapping("/users/{userId}/events/{eventId}")

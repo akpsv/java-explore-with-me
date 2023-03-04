@@ -10,7 +10,7 @@ import java.util.NoSuchElementException;
 public interface UserService {
     UserDto create(NewUserRequest newUser);
 
-    List<User> getUsersByIds(List<Long> ids, Integer from, Integer size);
+    List<UserDto> getUsersByIds(List<Long> ids, Integer from, Integer size);
 
     void deleteById(Long userId) throws NoSuchElementException;
 }

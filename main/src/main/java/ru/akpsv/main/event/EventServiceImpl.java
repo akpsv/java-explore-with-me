@@ -27,7 +27,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,15 +50,15 @@ public class EventServiceImpl implements EventService {
         return Stream.of(event)
                 .map(eventRepository::save)
                 .map(EventMapper::toEventFullDto)
-                .findFirst().get();
+                .findFirst()
+                .get();
     }
 
     @Override
-    public Optional<List<EventShortDto>> getEventsByUser(Long userId, Integer from, Integer size) {
-        List<EventShortDto> groupOfEventShortDtos = eventRepository.getEventsByUser(em, userId, from, size).stream()
+    public List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size) {
+        return eventRepository.getEventsByUser(em, userId, from, size).stream()
                 .map(EventMapper::toEventShortDto)
                 .collect(Collectors.toList());
-        return Optional.of(groupOfEventShortDtos);
     }
 
     @Override

@@ -8,7 +8,7 @@
 //import ru.akpsv.main.event.dto.EventMapper;
 //import ru.akpsv.main.event.dto.NewEventDto;
 //import ru.akpsv.main.event.model.Event;
-//import ru.akpsv.main.user.UserRepository;
+//import ru.akpsv.main.user.repository.UserRepository;
 //import ru.akpsv.main.user.model.User;
 //
 //import javax.persistence.EntityManager;

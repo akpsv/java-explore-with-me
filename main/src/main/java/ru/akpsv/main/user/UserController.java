@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.akpsv.main.user.dto.NewUserRequest;
 import ru.akpsv.main.user.dto.UserDto;
-import ru.akpsv.main.user.model.User;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -23,9 +22,9 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> getUsersByIds(@RequestParam List<Long> ids,
-                                    @RequestParam(defaultValue = "0") Integer from,
-                                    @RequestParam(defaultValue = "10") Integer size) {
+    public List<UserDto> getUsersByIds(@RequestParam List<Long> ids,
+                                       @RequestParam(defaultValue = "0") Integer from,
+                                       @RequestParam(defaultValue = "10") Integer size) {
         return userService.getUsersByIds(ids, from, size);
     }
 

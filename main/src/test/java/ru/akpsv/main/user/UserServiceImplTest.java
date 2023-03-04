@@ -7,11 +7,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.akpsv.TestHelper;
-import ru.akpsv.main.event.dto.EventMapper;
 import ru.akpsv.main.user.dto.NewUserRequest;
 import ru.akpsv.main.user.dto.UserDto;
 import ru.akpsv.main.user.model.User;
+import ru.akpsv.main.user.repository.UserRepository;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -24,10 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class UserServiceImplTest {
     @Mock
     UserRepository stubUserRepository;
-
     @InjectMocks
     UserServiceImpl userService;
-
 
     @Test
     void create_NewUserRequest_ReturnsUserDto() {
@@ -53,5 +52,17 @@ class UserServiceImplTest {
                 userService.deleteById(100L));
         //Проверка
         assertThat(exception.getMessage(), equalTo(expectedExceptionMassege));
+    }
+
+    @Test
+    void getUsersByIds_Ids_ReturnsGroupOfUserDto() {
+        //Подготовка
+        User user = TestHelper.createUser(1L, "user@email.ru");
+        Mockito.when(stubUserRepository.getUsersByIds(Mockito.any(), Mockito.anyInt(), Mockito.anyInt())).thenReturn(List.of(user));
+        int expectedSizeGroupOfUserDtos = 1;
+        //Действия
+        List<UserDto> actualUserDtosByIds = userService.getUsersByIds(List.of(1L), 0, 10);
+        //Проверка
+        assertThat(actualUserDtosByIds.size(), equalTo(expectedSizeGroupOfUserDtos));
     }
 }

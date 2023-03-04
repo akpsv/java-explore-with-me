@@ -5,12 +5,11 @@ import ru.akpsv.main.request.dto.ParticipationRequestDto;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Optional;
 
 public interface EventService {
     EventFullDto create(Long userId, NewEventDto newEvent);
 
-    Optional<List<EventShortDto>> getEventsByUser(Long userId, Integer from, Integer size);
+    List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size);
 
     List<EventFullDto> getEventsByAdminParams(EventParamsForAdmin params);
 

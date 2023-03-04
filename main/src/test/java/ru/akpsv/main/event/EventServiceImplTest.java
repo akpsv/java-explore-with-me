@@ -1,30 +1,26 @@
 package ru.akpsv.main.event;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import ru.akpsv.TestHelper;
 import ru.akpsv.main.category.CategoryRepository;
 import ru.akpsv.main.category.model.Category;
-import ru.akpsv.main.event.dto.EventFullDto;
-import ru.akpsv.main.event.dto.EventMapper;
-import ru.akpsv.main.event.dto.NewEventDto;
-import ru.akpsv.main.event.dto.UpdateEventAdminRequest;
+import ru.akpsv.main.event.dto.*;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
-import ru.akpsv.main.user.UserRepository;
+import ru.akpsv.main.user.repository.UserRepository;
 import ru.akpsv.main.user.model.User;
 
+import java.util.List;
 import java.util.Optional;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.samePropertyValuesAs;
 
 @ExtendWith(MockitoExtension.class)
 class EventServiceImplTest {
@@ -55,16 +51,27 @@ class EventServiceImplTest {
         //Действия
         EventFullDto actualEventFullDto = eventService.create(1L, newEventDto);
         //Проверка
-        assertThat(actualEventFullDto, samePropertyValuesAs(expectedEventFullDto,"category", "initiator","location"));
+        assertThat(actualEventFullDto, samePropertyValuesAs(expectedEventFullDto, "category", "initiator", "location"));
     }
-//
-//    @Test
-//    void getEventsByUser() {
-//    }
-//
-//    @Test
-//    void getEventsByParams() {
-//    }
+
+    @Test
+    void getEventsByUser_UserId_ReturnsEventsByUser() {
+        //Подготовка
+        Event event = TestHelper.createEvent(1L);
+        Mockito.when(stubEventRepository.getEventsByUser(Mockito.any(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt())).thenReturn(List.of(event));
+
+        Category category = TestHelper.createCategory();
+        Mockito.when(stubCategoryRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(category));
+
+        User user = TestHelper.createUser(1L, "user@email.ru");
+        Mockito.when(stubUserRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user));
+
+        int expectedSizeOfGroup = 1;
+        //Действия
+        List<EventShortDto> acutalEventsByUser = eventService.getEventsByUser(1L, 0, 10);
+        //Проверка
+        assertThat(acutalEventsByUser.size(), equalTo(expectedSizeOfGroup));
+    }
 
     @Test
     void checkRequestAndFillUpdationFields_UpdateEventAdminRequestWithPublishEvent_ReturnsCorrectEventFullDto() {
