@@ -6,7 +6,7 @@ import ru.akpsv.main.compilation.dto.CompilationDto;
 import ru.akpsv.main.compilation.dto.CompilationMapper;
 import ru.akpsv.main.compilation.dto.NewCompilationDto;
 import ru.akpsv.main.compilation.dto.UpdateCompilationRequest;
-import ru.akpsv.main.event.EventRepository;
+import ru.akpsv.main.event.repository.EventRepository;
 import ru.akpsv.main.event.model.Event;
 
 import javax.persistence.EntityManager;

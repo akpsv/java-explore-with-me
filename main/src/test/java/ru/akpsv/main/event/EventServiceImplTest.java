@@ -8,10 +8,13 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.akpsv.TestHelper;
 import ru.akpsv.main.category.CategoryRepository;
+import ru.akpsv.main.category.dto.CategoryDto;
 import ru.akpsv.main.category.model.Category;
 import ru.akpsv.main.event.dto.*;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
+import ru.akpsv.main.event.repository.EventRepository;
+import ru.akpsv.main.user.dto.UserShortDto;
 import ru.akpsv.main.user.repository.UserRepository;
 import ru.akpsv.main.user.model.User;
 
@@ -39,11 +42,13 @@ class EventServiceImplTest {
     void create_NewEventDto_ReturnsEventFullDto() {
         //Подготовка
         NewEventDto newEventDto = TestHelper.createNewEventDto();
-        Event event = TestHelper.createEvent(1L);
+        Event event = TestHelper.createEvent(1L, 1L);
         Mockito.when(stubEventRepository.save(Mockito.any())).thenReturn(event);
-        EventFullDto expectedEventFullDto = TestHelper.createEventFullDto();
+        CategoryDto categoryDto = TestHelper.createCategoryDto(1L, "category");
+        UserShortDto userShortDto = TestHelper.createUserShortDto(1L, "user");
+        EventFullDto expectedEventFullDto = TestHelper.createEventFullDto(categoryDto, userShortDto);
 
-        Category category = TestHelper.createCategory();
+        Category category = TestHelper.createCategory(1L);
         Mockito.when(stubCategoryRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(category));
 
         User user = TestHelper.createUser(1L, "user@email.ru");
@@ -57,10 +62,10 @@ class EventServiceImplTest {
     @Test
     void getEventsByUser_UserId_ReturnsEventsByUser() {
         //Подготовка
-        Event event = TestHelper.createEvent(1L);
+        Event event = TestHelper.createEvent(1L, 1L);
         Mockito.when(stubEventRepository.getEventsByUser(Mockito.any(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt())).thenReturn(List.of(event));
 
-        Category category = TestHelper.createCategory();
+        Category category = TestHelper.createCategory(1L);
         Mockito.when(stubCategoryRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(category));
 
         User user = TestHelper.createUser(1L, "user@email.ru");
@@ -77,7 +82,7 @@ class EventServiceImplTest {
     void checkRequestAndFillUpdationFields_UpdateEventAdminRequestWithPublishEvent_ReturnsCorrectEventFullDto() {
         //Подготовка
         UpdateEventAdminRequest requestWitnPublishEvent = TestHelper.createUpdateEventAdminRequestWitnPublishEvent();
-        Event updatingEvent = TestHelper.createEvent(1L);
+        Event updatingEvent = TestHelper.createEvent(1L, 1L);
 
         //Действия
         Event actualUpdatedEvent = eventService.checkAdminRequestAndFillUpdatingFilds(requestWitnPublishEvent, updatingEvent);      //Проверка

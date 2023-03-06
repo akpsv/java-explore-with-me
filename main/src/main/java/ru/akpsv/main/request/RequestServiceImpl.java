@@ -3,7 +3,7 @@ package ru.akpsv.main.request;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.akpsv.main.error.ViolationOfRestrictionsException;
-import ru.akpsv.main.event.EventRepository;
+import ru.akpsv.main.event.repository.EventRepository;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
 import ru.akpsv.main.request.dto.ParticipationRequestDto;

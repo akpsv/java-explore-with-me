@@ -4,24 +4,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.akpsv.main.category.CategoryRepository;
 import ru.akpsv.main.category.dto.CategoryDto;
-import ru.akpsv.main.category.model.Category;
+import ru.akpsv.main.category.dto.CategoryMapper;
 import ru.akpsv.main.event.model.Event;
-import ru.akpsv.main.user.repository.UserRepository;
 import ru.akpsv.main.user.dto.UserMapper;
 import ru.akpsv.main.user.dto.UserShortDto;
-import ru.akpsv.main.user.model.User;
+import ru.akpsv.main.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class EventMapper {
     private static CategoryRepository categoryRepository;
     private static UserRepository userRepository;
-    private static DateTimeFormatter formatter= DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
-    private EventMapper(CategoryRepository categoryRepository, UserRepository userRepository){
+    private EventMapper(CategoryRepository categoryRepository, UserRepository userRepository) {
         EventMapper.categoryRepository = categoryRepository;
         EventMapper.userRepository = userRepository;
     }
@@ -38,34 +39,25 @@ public class EventMapper {
                 .paid(newEvent.getPaid())
                 .participantLimit(newEvent.getParticipantLimit())
                 .confirmedRequests(0L)
+                .availableToParicipants(false)
                 .requestModeration(newEvent.getRequestModeration())
                 .build();
     }
 
     public static EventFullDto toEventFullDto(Event event) {
-        Category category = categoryRepository.findById(event.getCategoryId()).get();
-        CategoryDto categoryDto = CategoryDto.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .build();
+        String publishedOn = Optional.ofNullable(event.getPublishedOn())
+                .map(timestamp -> event.getPublishedOn().format(formatter))
+                .orElse("");
 
-        User user = userRepository.findById(event.getInitiatorId()).get();
-        UserShortDto userShortDto = UserMapper.toUserShotDto(user);
-        String publishedOn;
-        if (event.getPublishedOn() == null) {
-            publishedOn = "";
-        } else {
-            publishedOn = event.getPublishedOn().format(formatter);
-        }
         return EventFullDto.builder()
                 .annotation(event.getAnnotation())
-                .category(categoryDto)
+                .category(getCategoryDto(event))
                 .confirmedRequests(event.getConfirmedRequests())
                 .createdOn(event.getCreatedOn().format(formatter))
                 .description(event.getDescription())
                 .eventDate(event.getEventDate().format(formatter))
                 .id(event.getId())
-                .initiator(userShortDto)
+                .initiator(getUserShortDto(event))
                 .location(event.getLocation())
                 .paid(event.getPaid())
                 .participantLimit(event.getParticipantLimit())
@@ -78,25 +70,28 @@ public class EventMapper {
     }
 
     public static EventShortDto toEventShortDto(Event event) {
-        Category category = categoryRepository.findById(event.getCategoryId()).get();
-        CategoryDto categoryDto = CategoryDto.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .build();
-
-        User user = userRepository.findById(event.getInitiatorId()).get();
-        UserShortDto userShortDto = UserMapper.toUserShotDto(user);
-
         return EventShortDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
-                .category(categoryDto)
+                .category(getCategoryDto(event))
                 .confirmedRequests(event.getConfirmedRequests())
                 .eventDate(event.getEventDate().format(formatter))
-                .initiator(userShortDto)
+                .initiator(getUserShortDto(event))
                 .paid(event.getPaid())
                 .title(event.getTitle())
                 .views(event.getViews())
                 .build();
+    }
+
+    private static UserShortDto getUserShortDto(Event event) {
+        return userRepository.findById(event.getInitiatorId())
+                .map(UserMapper::toUserShotDto)
+                .orElseThrow(() -> new NoSuchElementException("User with id=" + event.getInitiatorId() + " not exist"));
+    }
+
+    private static CategoryDto getCategoryDto(Event event) {
+        return categoryRepository.findById(event.getCategoryId())
+                .map(CategoryMapper::toCategoryDto)
+                .orElseThrow(() -> new NoSuchElementException("Category with id=" + event.getCategoryId() + " not exist"));
     }
 }

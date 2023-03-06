@@ -98,7 +98,19 @@ public class EventController {
                                                        @RequestParam(defaultValue = "10") Integer size,
                                                        HttpServletRequest request
     ) {
-        EventParamsForPublic params = new EventParamsForPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
+        EventParams params = new EventParams();
+        params.setText(text);
+        params.setCategories(categories);
+        params.setPaid(paid);
+        params.setRangeStart(rangeStart);
+        params.setRangeEnd(rangeEnd);
+        params.setOnlyAvailable(onlyAvailable);
+        params.setSort(sort);
+        params.setFrom(from);
+        params.setSize(size);
+
+        EventParams eventParams = EventParams.builder().from(0).paid(Optional.empty()).build();
+
         log.debug("Вызов метода eventService.getEventsByPublicParams c параметрами: params= {}, reqeust={}", params, request);
         List<EventShortDto> eventsByPublicParams = eventService.getEventsByPublicParams(params, request);
         return eventsByPublicParams;

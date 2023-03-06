@@ -11,6 +11,7 @@ import ru.akpsv.main.error.ViolationOfRestrictionsException;
 import ru.akpsv.main.event.dto.*;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
+import ru.akpsv.main.event.repository.EventRepository;
 import ru.akpsv.main.request.RequestRepository;
 import ru.akpsv.main.request.dto.ParticipationRequestDto;
 import ru.akpsv.main.request.dto.RequestMapper;
@@ -36,7 +37,6 @@ import java.util.stream.Stream;
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
-//    private final EventMapper eventMapper;
     @PersistenceContext
     EntityManager em;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -218,7 +218,7 @@ public class EventServiceImpl implements EventService {
     private String serverUrl;
 
     @Override
-    public List<EventShortDto> getEventsByPublicParams(EventParamsForPublic params, HttpServletRequest request) {
+    public List<EventShortDto> getEventsByPublicParams(EventParams params, HttpServletRequest request) {
 
         RestClientService restClientService = new RestClientService(serverUrl, new RestTemplateBuilder());
         RequestDtoIn requestDtoIn = RequestDtoIn.builder()

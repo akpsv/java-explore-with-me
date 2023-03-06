@@ -34,6 +34,7 @@ CREATE TABLE events
     location_latitude  DOUBLE PRECISION,
     paid               BOOLEAN,
     participant_limit  INTEGER,
+    available_to_participants   BOOLEAN,
     published_on       TIMESTAMP WITHOUT TIME ZONE,
     request_moderation BOOLEAN,
     state              VARCHAR(255),

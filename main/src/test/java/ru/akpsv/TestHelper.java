@@ -5,6 +5,7 @@ import ru.akpsv.main.category.model.Category;
 import ru.akpsv.main.compilation.Compilation;
 import ru.akpsv.main.compilation.dto.NewCompilationDto;
 import ru.akpsv.main.event.dto.EventFullDto;
+import ru.akpsv.main.event.dto.EventShortDto;
 import ru.akpsv.main.event.dto.NewEventDto;
 import ru.akpsv.main.event.dto.UpdateEventAdminRequest;
 import ru.akpsv.main.event.model.Event;
@@ -47,35 +48,38 @@ public class TestHelper {
 
     public static NewEventDto createNewEventDto() {
         return NewEventDto.builder()
-                .annotation("annotaion")
+                .annotation("annotation")
                 .category(1L)
                 .description("description")
-                .eventDate("2024-12-31 15:10:05")
+                .eventDate("2024-12-31 17:10:05")
                 .location(new Location(55.755864, 37.617698))
-                .paid(true)
-                .participantLimit(10L)
+                .paid(false)
+                .participantLimit(0L)
                 .requestModeration(true)
                 .title("title")
                 .build();
     }
 
-    public static Event createEvent(Long initiatorId) {
+    public static Event createEvent(Long initiatorId, Long categoryId) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         return Event.builder()
-                .annotation("annotaion")
-                .categoryId(1L)
+                .annotation("annotation")
+                .categoryId(categoryId)
                 .description("description")
                 .createdOn(LocalDateTime.parse("2024-10-31 17:10:05", formatter))
                 .eventDate(LocalDateTime.parse("2024-12-31 17:10:05", formatter))
                 .publishedOn(LocalDateTime.parse("2024-12-31 15:10:05", formatter))
                 .location(new Location(37.617698, 55.755864))
                 .initiatorId(initiatorId)
-                .paid(true)
-                .participantLimit(10L)
+                .paid(false)
+                .participantLimit(0L)
+                .confirmedRequests(0L)
+                .availableToParicipants(false)
                 .requestModeration(true)
                 .state(EventState.PENDING)
                 .title("title")
+                .views(0L)
                 .build();
     }
 
@@ -84,10 +88,10 @@ public class TestHelper {
 
     }
 
-    public static EventFullDto createEventFullDto() {
+    public static EventFullDto createEventFullDto(CategoryDto categoryDto, UserShortDto userShortDto) {
 
         return EventFullDto.builder()
-                .annotation("annotaion")
+                .annotation("annotation")
                 .category(CategoryDto.builder().build())
                 .description("description")
                 .createdOn("2024-10-31 17:10:05")
@@ -95,18 +99,20 @@ public class TestHelper {
                 .publishedOn("2024-12-31 15:10:05")
                 .location(new Location(37.617698, 55.755864))
                 .initiator(UserShortDto.builder().build())
-                .paid(true)
-                .participantLimit(10L)
+                .paid(false)
+                .participantLimit(0L)
+                .confirmedRequests(0L)
                 .requestModeration(true)
                 .state("PENDING")
                 .title("title")
+                .views(0L)
                 .build();
 
     }
 
     public static NewCompilationDto createNewCompilationDto() {
         return NewCompilationDto.builder()
-                .events(Set.of(1L,2L))
+                .events(Set.of(1L, 2L))
                 .pinned(false)
                 .title("title")
                 .build();
@@ -121,10 +127,39 @@ public class TestHelper {
                 .build();
     }
 
-    public static Category createCategory() {
+    public static Category createCategory(Long id) {
         return Category.builder()
-                .id(1L)
+                .id(id)
                 .name("category")
                 .build();
+    }
+
+    public static CategoryDto createCategoryDto(Long id, String name) {
+        return CategoryDto.builder()
+                .id(id)
+                .name(name)
+                .build();
+    }
+
+    public static UserShortDto createUserShortDto(Long id, String name) {
+        return UserShortDto.builder()
+                .id(id)
+                .name(name)
+                .build();
+    }
+
+    public static EventShortDto createEventShortDto() {
+        return EventShortDto.builder()
+                .id(1L)
+                .title("title")
+                .views(0L)
+                .initiator(createUserShortDto(1L, "user"))
+                .eventDate("2024-12-31 17:10:05")
+                .confirmedRequests(0L)
+                .annotation("annotation")
+                .category(createCategoryDto(1L, "category"))
+                .paid(false)
+                .build();
+
     }
 }

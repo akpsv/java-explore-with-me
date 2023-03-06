@@ -55,12 +55,16 @@ public class Event {
     @Column(name = "participant_limit")
     private Long participantLimit;//Ограничение на количество участников. Значение 0 - означает отсутствие ограничения
 
+    @Column(name = "available_to_participants")
+    private Boolean availableToParicipants; //доступность для участия
+
     @Column(name = "published_on")
     private LocalDateTime publishedOn;     //Дата и время публикации события (в формате "yyyy-MM-dd HH:mm:ss") TODO:(Заполняестя во время работы)
 
     @Column(name = "request_moderation")
     private Boolean requestModeration;  //Нужна ли пре-модерация заявок на участие
 
+    @Column(name = "state")
     @Enumerated(EnumType.STRING)
     private EventState state = EventState.PENDING;           //Список состояний жизненного цикла события Enum: [ PENDING, PUBLISHED, CANCELED ] TODO:(Заполняется во время создания)
 

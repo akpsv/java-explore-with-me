@@ -3,7 +3,7 @@ package ru.akpsv.main.compilation.dto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.akpsv.main.compilation.Compilation;
-import ru.akpsv.main.event.EventRepository;
+import ru.akpsv.main.event.repository.EventRepository;
 import ru.akpsv.main.event.dto.EventMapper;
 import ru.akpsv.main.event.dto.EventShortDto;
 import ru.akpsv.main.event.model.Event;

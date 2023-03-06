@@ -1,8 +1,10 @@
-package ru.akpsv.main.event;
+package ru.akpsv.main.event.repository;
 
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import ru.akpsv.main.event.EventParamsForAdmin;
+import ru.akpsv.main.event.EventParams;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
 import ru.akpsv.main.event.model.Event_;
@@ -21,7 +23,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
-public interface EventRepository extends JpaRepository<Event, Long> {
+public interface EventRepository extends JpaRepository<Event, Long>, EventRepositoryAdvanced {
     default List<Event> getEventsByUser(EntityManager em, Long userId, Integer from, Integer size) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Event> cq = cb.createQuery(Event.class);
@@ -71,7 +73,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
         return resultList;
     }
 
-    default List<Event> getEventsByPublicParams(EntityManager em, EventParamsForPublic params) {
+    default List<Event> getEventsByPublicParams(EntityManager em, EventParams params) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Event> cq = cb.createQuery(Event.class);
         Root<Event> fromEvent = cq.from(Event.class);
