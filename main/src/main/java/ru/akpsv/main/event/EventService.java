@@ -11,7 +11,7 @@ public interface EventService {
 
     List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size);
 
-    List<EventFullDto> getEventsByAdminParams(EventParamsForAdmin params);
+    List<EventFullDto> getEventsByAdminParams(EventParams params);
 
     EventFullDto updateEventByAdmin(UpdateEventAdminRequest updatingRequest, Long eventId);
 

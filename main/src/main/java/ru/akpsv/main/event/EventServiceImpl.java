@@ -62,7 +62,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<EventFullDto> getEventsByAdminParams(EventParamsForAdmin params) {
+    public List<EventFullDto> getEventsByAdminParams(EventParams params) {
         return eventRepository.getEventsByAdminParams(em, params).stream()
                 .map(EventMapper::toEventFullDto)
                 .collect(Collectors.toList());

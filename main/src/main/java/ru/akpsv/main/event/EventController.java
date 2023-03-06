@@ -73,7 +73,14 @@ public class EventController {
                                                      @RequestParam(defaultValue = "0") Integer from,
                                                      @RequestParam(defaultValue = "10") Integer size) {
 
-        EventParamsForAdmin params = new EventParamsForAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
+        EventParams params = new EventParams();
+        params.setUsers(users);
+        params.setStates(states);
+        params.setCategories(categories);
+        params.setRangeStart(rangeStart);
+        params.setRangeEnd(rangeEnd);
+        params.setFrom(from);
+        params.setSize(size);
         return eventService.getEventsByAdminParams(params);
     }
 

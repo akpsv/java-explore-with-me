@@ -34,7 +34,7 @@ public interface EventRepository extends JpaRepository<Event, Long>, EventReposi
         return query.getResultList();
     }
 
-    default List<Event> getEventsByAdminParams(EntityManager em, EventParamsForAdmin params) {
+    default List<Event> getEventsByAdminParams(EntityManager em, EventParams params) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Event> cq = cb.createQuery(Event.class);
         Root<Event> fromEvent = cq.from(Event.class);
