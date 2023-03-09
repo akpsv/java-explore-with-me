@@ -64,6 +64,7 @@ public class TestHelper {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         return Event.builder()
+                .id(1L)
                 .annotation("annotation")
                 .categoryId(categoryId)
                 .description("description")
@@ -91,6 +92,7 @@ public class TestHelper {
     public static EventFullDto createEventFullDto(CategoryDto categoryDto, UserShortDto userShortDto) {
 
         return EventFullDto.builder()
+                .id(1L)
                 .annotation("annotation")
                 .category(CategoryDto.builder().build())
                 .description("description")

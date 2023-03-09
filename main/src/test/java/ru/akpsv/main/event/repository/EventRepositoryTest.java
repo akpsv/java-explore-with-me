@@ -1,5 +1,6 @@
 package ru.akpsv.main.event.repository;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,8 @@ import ru.akpsv.TestHelper;
 import ru.akpsv.main.category.CategoryRepository;
 import ru.akpsv.main.category.model.Category;
 import ru.akpsv.main.event.EventParams;
+import ru.akpsv.main.event.dto.EventMapper;
+import ru.akpsv.main.event.dto.NewEventDto;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
 import ru.akpsv.main.event.model.Event_;
@@ -22,8 +25,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 
 @DataJpaTest
 class EventRepositoryTest {
@@ -42,6 +48,22 @@ class EventRepositoryTest {
         userRepository.flush();
         categoryRepository.deleteAll();
         categoryRepository.flush();
+    }
+
+        @Test
+    void save_NewEventDto_ReturnsCorrectEvent() {
+        //Подготоска
+        User user = TestHelper.createUser(0L, "user@email.ru");
+        User savedUser = userRepository.save(user);
+        NewEventDto newEventDto = TestHelper.createNewEventDto();
+
+        Event eventAfterMapping = EventMapper.toEvent(newEventDto, savedUser.getId());
+        //Действия
+        Event actualSavedEvent = eventRepository.save(eventAfterMapping);
+
+        //Проверка
+        assertThat(actualSavedEvent.getId(), not(0L));
+        assertThat(actualSavedEvent.getCreatedOn(), notNullValue());
     }
 
     @Test

@@ -39,7 +39,7 @@ class EventMapperTest {
         //Действия
         Event actualEvent = EventMapper.toEvent(newEventDto, 1L);
         //Проверка
-        assertThat(actualEvent, samePropertyValuesAs(expectedEvent, "createdOn", "views", "publishedOn", "state", "location"));
+        assertThat(actualEvent, samePropertyValuesAs(expectedEvent, "id","createdOn", "views", "publishedOn", "state", "location"));
     }
 
     @Test

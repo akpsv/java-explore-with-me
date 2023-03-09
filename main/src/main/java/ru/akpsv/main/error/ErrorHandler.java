@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.akpsv.main.category.CategoryController;
 import ru.akpsv.main.compilation.CompilationController;
-import ru.akpsv.main.event.EventController;
+import ru.akpsv.main.event.controller.AdminEventCotnroller;
+import ru.akpsv.main.event.controller.PrivateEventController;
+import ru.akpsv.main.event.controller.PublicEventController;
 import ru.akpsv.main.request.RequestController;
 import ru.akpsv.main.user.UserController;
 
@@ -16,7 +18,8 @@ import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
 @RestControllerAdvice(assignableTypes = {
-        UserController.class, EventController.class,
+        UserController.class,
+        AdminEventCotnroller.class, PublicEventController.class, PrivateEventController.class,
         CategoryController.class, CompilationController.class,
         RequestController.class
 })

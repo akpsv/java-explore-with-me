@@ -1,23 +1,21 @@
-package ru.akpsv.main.event;
+package ru.akpsv.main.event.service;
 
-import ru.akpsv.main.event.dto.*;
+import ru.akpsv.main.event.EventRequestStatusUpdateRequest;
+import ru.akpsv.main.event.EventRequestStatusUpdateResult;
+import ru.akpsv.main.event.dto.EventFullDto;
+import ru.akpsv.main.event.dto.EventShortDto;
+import ru.akpsv.main.event.dto.NewEventDto;
+import ru.akpsv.main.event.dto.UpdateEventUserRequest;
 import ru.akpsv.main.request.dto.ParticipationRequestDto;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
-public interface EventService {
+public interface PrivateEventService {
     EventFullDto create(Long userId, NewEventDto newEvent);
 
     List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size);
 
-    List<EventFullDto> getEventsByAdminParams(EventParams params);
 
-    EventFullDto updateEventByAdmin(UpdateEventAdminRequest updatingRequest, Long eventId);
-
-    List<EventShortDto> getEventsByPublicParams(EventParams params, HttpServletRequest request);
-
-    EventFullDto getEventById(Long eventId, HttpServletRequest request);
 
     EventFullDto getFullEventInfoByUser(Long userId, Long eventId);
 

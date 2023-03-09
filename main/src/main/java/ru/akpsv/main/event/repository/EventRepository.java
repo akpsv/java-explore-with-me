@@ -3,24 +3,9 @@ package ru.akpsv.main.event.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ru.akpsv.main.event.EventParamsForAdmin;
-import ru.akpsv.main.event.EventParams;
 import ru.akpsv.main.event.model.Event;
-import ru.akpsv.main.event.model.EventState;
-import ru.akpsv.main.event.model.Event_;
 
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long>, EventRepositoryAdvanced {
