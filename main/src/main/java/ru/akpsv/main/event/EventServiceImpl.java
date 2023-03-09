@@ -11,8 +11,10 @@ import ru.akpsv.main.error.ViolationOfRestrictionsException;
 import ru.akpsv.main.event.dto.*;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
+import ru.akpsv.main.event.model.Event_;
+import ru.akpsv.main.event.repository.CriteriaQueryPreparation;
 import ru.akpsv.main.event.repository.EventRepository;
-import ru.akpsv.main.request.RequestRepository;
+import ru.akpsv.main.request.repository.RequestRepository;
 import ru.akpsv.main.request.dto.ParticipationRequestDto;
 import ru.akpsv.main.request.dto.RequestMapper;
 import ru.akpsv.main.request.model.Request;
@@ -20,8 +22,7 @@ import ru.akpsv.main.request.model.RequestStatus;
 import ru.akpsv.statclient.RestClientService;
 import ru.akpsv.statdto.RequestDtoIn;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.Predicate;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -37,8 +38,6 @@ import java.util.stream.Stream;
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
-    @PersistenceContext
-    EntityManager em;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
@@ -56,16 +55,50 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size) {
-        return eventRepository.getEventsByUser(em, userId, from, size).stream()
+        EventParams eventParams = new EventParams();
+        eventParams.setFrom(from);
+        eventParams.setSize(size);
+
+        CriteriaQueryPreparation<Event> request = (params, cb, cq, fromEvent) -> {
+            cq.select(fromEvent).where(cb.equal(fromEvent.get(Event_.INITIATOR_ID), userId));
+            return cq;
+        };
+
+        return eventRepository.getEvents(eventParams, request).stream()
                 .map(EventMapper::toEventShortDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<EventFullDto> getEventsByAdminParams(EventParams params) {
-        return eventRepository.getEventsByAdminParams(em, params).stream()
+    public List<EventFullDto> getEventsByAdminParams(EventParams param) {
+        return eventRepository.getEvents(param, prepareAdminRequest()).stream()
                 .map(EventMapper::toEventFullDto)
                 .collect(Collectors.toList());
+    }
+
+    private CriteriaQueryPreparation<Event> prepareAdminRequest() {
+        return (params, cb, cq, fromEvent) -> {
+//            EventParams params = eventParams.orElseThrow(() -> new NoSuchElementException("Parameters not passed."));
+            List<Predicate> predicates = new ArrayList<>();
+            params.getUsers().ifPresent(userIds -> predicates.add(fromEvent.get(Event_.INITIATOR_ID).in(userIds)));
+            params.getStates()
+                    .ifPresent(groupOfEventStates -> {
+                        List<EventState> collectOfEventStates = groupOfEventStates.stream().map(EventState::valueOf).collect(Collectors.toList());
+                        predicates.add(fromEvent.get(Event_.STATE).in(collectOfEventStates));
+                    });
+            params.getCategories().ifPresent(categoryIds -> predicates.add(fromEvent.get(Event_.CATEGORY_ID).in(categoryIds)));
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            params.getRangeStart().flatMap(startTimestamp -> params.getRangeEnd().map(endTimestamp ->
+                    predicates.add(cb.between(
+                            fromEvent.get(Event_.EVENT_DATE),
+                            LocalDateTime.parse(startTimestamp, formatter),
+                            LocalDateTime.parse(endTimestamp, formatter)))
+            ));
+            cq.orderBy(cb.desc(fromEvent.get(Event_.EVENT_DATE)));
+            cq.select(fromEvent).where(predicates.toArray(Predicate[]::new));
+            return cq;
+        };
     }
 
     @Override
@@ -219,7 +252,6 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventShortDto> getEventsByPublicParams(EventParams params, HttpServletRequest request) {
-
         RestClientService restClientService = new RestClientService(serverUrl, new RestTemplateBuilder());
         RequestDtoIn requestDtoIn = RequestDtoIn.builder()
                 .app("main-svc")
@@ -228,9 +260,42 @@ public class EventServiceImpl implements EventService {
                 .timestamp(LocalDateTime.now().format(formatter)).build();
         int post = restClientService.post(requestDtoIn);
 
-        return eventRepository.getEventsByPublicParams(em, params).stream()
+        return eventRepository.getEvents(params, preparePublicRequest()).stream()
                 .map(EventMapper::toEventShortDto)
                 .collect(Collectors.toList());
+    }
+
+    private CriteriaQueryPreparation<Event> preparePublicRequest() {
+        return (params, cb, cq, fromEvent) -> {
+//            EventParams params = eventParams.orElseThrow(() -> new NoSuchElementException("Parameters not passed."));
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(fromEvent.get(Event_.STATE), EventState.PUBLISHED));
+            params.getText().ifPresent(text -> predicates.add(cb.or(
+                            cb.like(cb.lower(fromEvent.get(Event_.ANNOTATION)), ("%" + text + "%").toLowerCase()),
+                            cb.like(cb.lower(fromEvent.get(Event_.DESCRIPTION)), ("%" + text + "%").toLowerCase())
+                    )
+            ));
+            params.getCategories().ifPresent(categoryIds -> predicates.add(fromEvent.get(Event_.CATEGORY_ID).in(categoryIds)));
+            params.getPaid().ifPresent(paid -> predicates.add(cb.equal(fromEvent.get(Event_.PAID), paid)));
+            params.getOnlyAvailable().ifPresent(available -> predicates.add(cb.equal(fromEvent.get(Event_.AVAILABLE_TO_PARICIPANTS), available)));
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            params.getRangeStart()
+                    .flatMap(startTimestamp -> params.getRangeEnd().map(endTimestamp ->
+                            predicates.add(cb.between(
+                                    fromEvent.get(Event_.EVENT_DATE),
+                                    LocalDateTime.parse(startTimestamp, formatter),
+                                    LocalDateTime.parse(endTimestamp, formatter)))
+                    ))
+                    .orElseGet(() -> predicates.add(cb.greaterThan(fromEvent.get(Event_.EVENT_DATE), LocalDateTime.now())));
+
+            params.getSort().ifPresent(sort -> {
+                if ("EVENT_DATE".equals(sort.toUpperCase())) cq.orderBy(cb.desc(fromEvent.get(Event_.EVENT_DATE)));
+                else cq.orderBy(cb.desc(fromEvent.get(Event_.VIEWS)));
+            });
+            cq.select(fromEvent).where(predicates.toArray(Predicate[]::new));
+            return cq;
+        };
     }
 
     @Override
@@ -251,7 +316,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto getFullEventInfoByUser(Long userId, Long eventId) {
-        Event event = eventRepository.getFullEventInfoByUser(em, userId, eventId);
+        Event event = eventRepository.getFullEventInfoByUser(userId, eventId);
         return EventMapper.toEventFullDto(event);
     }
 
@@ -288,7 +353,7 @@ public class EventServiceImpl implements EventService {
         }
 
         log.debug("Получение заявок из репозитория");
-        List<Request> requestsFromList = requestRepository.getRequestsFromList(em, updateRequestStatus.getRequestIds(), userId, eventId);
+        List<Request> requestsFromList = requestRepository.getRequestsFromList(updateRequestStatus.getRequestIds(), userId, eventId);
 
         List<ParticipationRequestDto> confirmedRequests = new ArrayList<>();
         List<ParticipationRequestDto> rejectedRequests = new ArrayList<>();

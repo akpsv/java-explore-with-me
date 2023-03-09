@@ -4,13 +4,17 @@ import ru.akpsv.main.event.EventParams;
 import ru.akpsv.main.event.model.Event;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface EventRepositoryAdvanced {
     Event getFullEventInfoByUser(Long userId, Long eventId);
 
-    List<Event> getEventsByPublicParams(EventParams params);
+//    List<Event> getEventsByPublicParams(EventParams params);
+//
+//    List<Event> getEventsByAdminParams(EventParams params);
+//
+//    List<Event> getEventsByUser(Long userId, Integer from, Integer size);
 
-    List<Event> getEventsByAdminParams(EventParams params);
+    List<Event> getEvents(EventParams params, CriteriaQueryPreparation<Event> queryPreparation) ;
 
-    List<Event> getEventsByUser(Long userId, Integer from, Integer size);
-}
+    }

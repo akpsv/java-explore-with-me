@@ -10,12 +10,17 @@ import ru.akpsv.main.category.model.Category;
 import ru.akpsv.main.event.EventParams;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
+import ru.akpsv.main.event.model.Event_;
 import ru.akpsv.main.user.model.User;
 import ru.akpsv.main.user.repository.UserRepository;
 
+import javax.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -42,17 +47,28 @@ class EventRepositoryTest {
     @Test
     void getEventsByUser_UserId_ReturnsEvents() {
         //Подготовка
-        User user = TestHelper.createUser(1L, "user@email.ru");
-        userRepository.save(user);
-        Category category = TestHelper.createCategory(1L);
-        categoryRepository.save(category);
-        Event event1 = TestHelper.createEvent(1L, 1L);
-        Event event2 = TestHelper.createEvent(1L, 1L);
+        User user = TestHelper.createUser(0L, "user@email.ru");
+        Long userId = userRepository.save(user).getId();
+
+        Category category = TestHelper.createCategory(0L);
+        Long categoryId = categoryRepository.save(category).getId();
+        Event event1 = TestHelper.createEvent(userId, categoryId);
+        Event event2 = TestHelper.createEvent(userId, categoryId);
         eventRepository.save(event1);
         eventRepository.save(event2);
+
+        EventParams eventParams = new EventParams();
+        eventParams.setFrom(0);
+        eventParams.setSize(10);
+
+        CriteriaQueryPreparation<Event> request = (params, cb, cq, fromEvent) -> {
+            cq.select(fromEvent).where(cb.equal(fromEvent.get(Event_.INITIATOR_ID), userId));
+            return cq;
+        };
+
         int expectedSizeOfEventGroup = 2;
         //Действия
-        List<Event> actualEventsByUser = eventRepository.getEventsByUser(1L, 0, 10);
+        List<Event> actualEventsByUser = eventRepository.getEvents(eventParams, request);
         //Проверка
         assertThat(actualEventsByUser.size(), equalTo(expectedSizeOfEventGroup));
     }
@@ -83,10 +99,33 @@ class EventRepositoryTest {
 
         int expectedSizeOfEventGroup = 1;
         //Действия
-        List<Event> actualEventsByAdminParams = eventRepository.getEventsByAdminParams(searchParams);
-        List<Event> all = eventRepository.findAll();
+        List<Event> actualEventsByAdminParams = eventRepository.getEvents(searchParams, prepareAdminRequest() );
         //Проверка
         assertThat(actualEventsByAdminParams.size(), equalTo(expectedSizeOfEventGroup));
+    }
+    private CriteriaQueryPreparation<Event> prepareAdminRequest() {
+        return (params, cb, cq, fromEvent) -> {
+//            EventParams params = eventParams.orElseThrow(() -> new NoSuchElementException("Parameters not passed."));
+            List<Predicate> predicates = new ArrayList<>();
+            params.getUsers().ifPresent(userIds -> predicates.add(fromEvent.get(Event_.INITIATOR_ID).in(userIds)));
+            params.getStates()
+                    .ifPresent(groupOfEventStates -> {
+                        List<EventState> collectOfEventStates = groupOfEventStates.stream().map(EventState::valueOf).collect(Collectors.toList());
+                        predicates.add(fromEvent.get(Event_.STATE).in(collectOfEventStates));
+                    });
+            params.getCategories().ifPresent(categoryIds -> predicates.add(fromEvent.get(Event_.CATEGORY_ID).in(categoryIds)));
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            params.getRangeStart().flatMap(startTimestamp -> params.getRangeEnd().map(endTimestamp ->
+                    predicates.add(cb.between(
+                            fromEvent.get(Event_.EVENT_DATE),
+                            LocalDateTime.parse(startTimestamp, formatter),
+                            LocalDateTime.parse(endTimestamp, formatter)))
+            ));
+            cq.orderBy(cb.desc(fromEvent.get(Event_.EVENT_DATE)));
+            cq.select(fromEvent).where(predicates.toArray(Predicate[]::new));
+            return cq;
+        };
     }
 
     @Test
@@ -119,8 +158,41 @@ class EventRepositoryTest {
 
         int expectedSizeOfEventGroup = 1;
         //Действия
-        List<Event> actualEventsByAdminParams = eventRepository.getEventsByPublicParams(searchParams);
+        List<Event> actualEventsByAdminParams = eventRepository.getEvents(searchParams, preparePublicRequest());
         //Проверка
         assertThat(actualEventsByAdminParams.size(), equalTo(expectedSizeOfEventGroup));
     }
+    private CriteriaQueryPreparation<Event> preparePublicRequest() {
+        return (params, cb, cq, fromEvent) -> {
+//            EventParams params = eventParams.orElseThrow(() -> new NoSuchElementException("Parameters not passed."));
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(fromEvent.get(Event_.STATE), EventState.PUBLISHED));
+            params.getText().ifPresent(text -> predicates.add(cb.or(
+                            cb.like(cb.lower(fromEvent.get(Event_.ANNOTATION)), ("%" + text + "%").toLowerCase()),
+                            cb.like(cb.lower(fromEvent.get(Event_.DESCRIPTION)), ("%" + text + "%").toLowerCase())
+                    )
+            ));
+            params.getCategories().ifPresent(categoryIds -> predicates.add(fromEvent.get(Event_.CATEGORY_ID).in(categoryIds)));
+            params.getPaid().ifPresent(paid -> predicates.add(cb.equal(fromEvent.get(Event_.PAID), paid)));
+            params.getOnlyAvailable().ifPresent(available -> predicates.add(cb.equal(fromEvent.get(Event_.AVAILABLE_TO_PARICIPANTS), available)));
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            params.getRangeStart()
+                    .flatMap(startTimestamp -> params.getRangeEnd().map(endTimestamp ->
+                            predicates.add(cb.between(
+                                    fromEvent.get(Event_.EVENT_DATE),
+                                    LocalDateTime.parse(startTimestamp, formatter),
+                                    LocalDateTime.parse(endTimestamp, formatter)))
+                    ))
+                    .orElseGet(() -> predicates.add(cb.greaterThan(fromEvent.get(Event_.EVENT_DATE), LocalDateTime.now())));
+
+            params.getSort().ifPresent(sort -> {
+                if ("EVENT_DATE".equals(sort.toUpperCase())) cq.orderBy(cb.desc(fromEvent.get(Event_.EVENT_DATE)));
+                else cq.orderBy(cb.desc(fromEvent.get(Event_.VIEWS)));
+            });
+            cq.select(fromEvent).where(predicates.toArray(Predicate[]::new));
+            return cq;
+        };
+    }
+
 }

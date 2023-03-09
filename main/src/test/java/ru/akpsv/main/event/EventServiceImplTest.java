@@ -63,7 +63,7 @@ class EventServiceImplTest {
     void getEventsByUser_UserId_ReturnsEventsByUser() {
         //Подготовка
         Event event = TestHelper.createEvent(1L, 1L);
-        Mockito.when(stubEventRepository.getEventsByUser(Mockito.any(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt())).thenReturn(List.of(event));
+        Mockito.when(stubEventRepository.getEvents(Mockito.any(),Mockito.any())).thenReturn(List.of(event));
 
         Category category = TestHelper.createCategory(1L);
         Mockito.when(stubCategoryRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(category));

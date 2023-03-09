@@ -10,6 +10,7 @@ import ru.akpsv.main.request.dto.ParticipationRequestDto;
 import ru.akpsv.main.request.dto.RequestMapper;
 import ru.akpsv.main.request.model.Request;
 import ru.akpsv.main.request.model.RequestStatus;
+import ru.akpsv.main.request.repository.RequestRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
