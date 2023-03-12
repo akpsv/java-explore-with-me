@@ -1,7 +1,6 @@
 package ru.akpsv.main.event.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.stereotype.Service;
 import ru.akpsv.main.error.ViolationOfRestrictionsException;
 import ru.akpsv.main.event.EventParams;
@@ -18,7 +17,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -66,10 +67,6 @@ public class AdminEventServiceImpl implements AdminEventService {
                 .map(eventRepository::save)
                 .map(EventMapper::toEventFullDto)
                 .orElseThrow(() -> new NoSuchElementException("Event witn id=" + eventId + " was not found"));
-//
-//        updatingEvent = checkAdminRequestAndFillUpdatingFilds(updatingRequest, updatingEvent);
-//        Event savedUpdatedEvent = eventRepository.save(updatingEvent);
-//        return EventMapper.toEventFullDto(savedUpdatedEvent);
     }
 
     /**
@@ -100,11 +97,8 @@ public class AdminEventServiceImpl implements AdminEventService {
             updatingEvent = updatingEvent.toBuilder().categoryId(request.getCategory()).build();
         if (request.getDescription() != null)
             updatingEvent = updatingEvent.toBuilder().description(request.getDescription()).build();
-
-        if (request.getEventDate() != null) {
+        if (request.getEventDate() != null)
             updatingEvent = updatingEvent.toBuilder().eventDate(LocalDateTime.parse(request.getEventDate(), formatter)).build();
-        }
-
         if (request.getLocation() != null)
             updatingEvent = updatingEvent.toBuilder().location(request.getLocation()).build();
         if (request.getPaid() != null)
@@ -133,22 +127,35 @@ public class AdminEventServiceImpl implements AdminEventService {
     private Event checkAdminConditionsAndFillStateField(UpdateEventRequest request, Event updatingEvent) {
         if (request.getStateAction() != null) {
             if (request.getStateAction().equals(StateAction.PUBLISH_EVENT.name())) {
-                if (!updatingEvent.getState().equals(EventState.PENDING)) {
-                    throw new ViolationOfRestrictionsException("Cannot publish the event because it's not in the right state: PUBLISHED");
-                }
-                LocalDateTime publishedTime = LocalDateTime.now().plusMinutes(1);
-                if (!updatingEvent.getEventDate().minusHours(1L).isAfter(publishedTime)) {
-                    throw new ConcurrencyFailureException("Incorrect EventDate or PublishedOn");
-                }
-                updatingEvent = updatingEvent.toBuilder().publishedOn(publishedTime).state(EventState.PUBLISHED).build();
-
+                checkOfPending(updatingEvent);
+                updatingEvent = checkAndSetPublishedOnTime(updatingEvent);
             } else {
-                if (!updatingEvent.getState().equals(EventState.PENDING)) {
-                    throw new ViolationOfRestrictionsException("Cannot cancel the event because it's not in the right state: PUBLISHED");
-                }
-                updatingEvent = updatingEvent.toBuilder().state(EventState.CANCELED).build();
+                updatingEvent = checkAndSetCanceledState(updatingEvent);
             }
         }
+        return updatingEvent;
+    }
+
+    private void checkOfPending(Event updatingEvent) {
+        if (!updatingEvent.getState().equals(EventState.PENDING)) {
+            throw new ViolationOfRestrictionsException("Cannot publish the event because it's not in the right state: PUBLISHED");
+        }
+    }
+
+    private Event checkAndSetPublishedOnTime(Event updatingEvent) {
+        LocalDateTime publishedTime = LocalDateTime.now().plusMinutes(1);
+        if (!updatingEvent.getEventDate().minusHours(1L).isAfter(publishedTime)) {
+            throw new ViolationOfRestrictionsException("Incorrect EventDate or PublishedOn");
+        }
+        updatingEvent = updatingEvent.toBuilder().publishedOn(publishedTime).state(EventState.PUBLISHED).build();
+        return updatingEvent;
+    }
+
+    private Event checkAndSetCanceledState(Event updatingEvent) {
+        if (!updatingEvent.getState().equals(EventState.PENDING)) {
+            throw new ViolationOfRestrictionsException("Cannot cancel the event because it's not in the right state: PUBLISHED");
+        }
+        updatingEvent = updatingEvent.toBuilder().state(EventState.CANCELED).build();
         return updatingEvent;
     }
 

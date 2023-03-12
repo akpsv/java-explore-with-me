@@ -99,7 +99,6 @@ public class EventRepositoryAdvancedImpl implements EventRepositoryAdvanced {
 //        return getEvents(params, cqCreateFunc);
 //    }
 
-
     public List<Event> getEvents(EventParams params, CriteriaQueryPreparation<Event> queryPreparation) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Event> cq = cb.createQuery(Event.class);

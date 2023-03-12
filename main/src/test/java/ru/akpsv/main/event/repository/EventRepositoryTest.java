@@ -74,8 +74,8 @@ class EventRepositoryTest {
 
         Category category = TestHelper.createCategory(0L);
         Long categoryId = categoryRepository.save(category).getId();
-        Event event1 = TestHelper.createEvent(userId, categoryId);
-        Event event2 = TestHelper.createEvent(userId, categoryId);
+        Event event1 = TestHelper.createEvent(0L,userId, categoryId);
+        Event event2 = TestHelper.createEvent(0L,userId, categoryId);
         eventRepository.save(event1);
         eventRepository.save(event2);
 
@@ -108,8 +108,8 @@ class EventRepositoryTest {
         Category savedCategory1 = categoryRepository.save(category1);
         Category savedCategory2 = categoryRepository.save(category2);
 
-        Event event1 = TestHelper.createEvent(savedUser2.getId(), savedCategory2.getId());
-        Event event2 = TestHelper.createEvent(savedUser1.getId(), savedCategory2.getId());
+        Event event1 = TestHelper.createEvent(0L,savedUser2.getId(), savedCategory2.getId());
+        Event event2 = TestHelper.createEvent(0L,savedUser1.getId(), savedCategory2.getId());
         eventRepository.save(event1);
         eventRepository.save(event2);
 
@@ -153,26 +153,26 @@ class EventRepositoryTest {
     @Test
     void getEventsByPublicParams_CategoryAndDateTimeRange_ReturnsEvent() {
         //Подготовка
-        User user = TestHelper.createUser(1L, "user@email.ru");
-        userRepository.save(user);
+        User user = TestHelper.createUser(0L, "user@email.ru");
+        User savedUser = userRepository.save(user);
 
-        Category category1 = TestHelper.createCategory(1L);
-        Category category2 = TestHelper.createCategory(2L);
-        categoryRepository.save(category1);
-        categoryRepository.save(category2);
+        Category category1 = TestHelper.createCategory(0L);
+        Category category2 = TestHelper.createCategory(0L);
+        Category savedCategory1 = categoryRepository.save(category1);
+        Category savedCategory2 = categoryRepository.save(category2);
 
-        Event event1 = TestHelper.createEvent(1L, 1L);
-        eventRepository.save(event1);
-        Event event2 = TestHelper.createEvent(1L, 2L);
+        Event event1 = TestHelper.createEvent(0L,savedUser.getId(), savedCategory1.getId());
+        Event savedEvent1 = eventRepository.save(event1);
+        Event event2 = TestHelper.createEvent(0L,savedUser.getId(), savedCategory2.getId());
         event2.setState(EventState.PUBLISHED);
-        eventRepository.save(event2);
-        Event event3 = TestHelper.createEvent(1L, 2L);
+        Event savedEvent2 = eventRepository.save(event2);
+        Event event3 = TestHelper.createEvent(0L,savedUser.getId(), savedCategory2.getId());
         event3.setState(EventState.PUBLISHED);
         event3.setEventDate(LocalDateTime.now().plusHours(2));
-        eventRepository.save(event3);
+        Event savedEvent3 = eventRepository.save(event3);
 
         EventParams searchParams = new EventParams();
-        searchParams.setCategories(Optional.of(List.of(2L)));
+        searchParams.setCategories(Optional.of(List.of(savedCategory2.getId())));
         searchParams.setRangeStart(Optional.of("2024-01-01 00:00:00"));
         searchParams.setRangeEnd(Optional.of("2025-01-01 00:00:00"));
         searchParams.setFrom(0);

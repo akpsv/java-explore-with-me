@@ -34,7 +34,7 @@ class EventMapperTest {
     void toEvent_EventNewDto_ReturnsEvent() {
         //Подготовка
         NewEventDto newEventDto = TestHelper.createNewEventDto();
-        Event expectedEvent = TestHelper.createEvent(1L, 1L);
+        Event expectedEvent = TestHelper.createEvent(1L,1L, 1L);
 
         //Действия
         Event actualEvent = EventMapper.toEvent(newEventDto, 1L);
@@ -45,7 +45,7 @@ class EventMapperTest {
     @Test
     void toEventFullDto_Event_ReturnsEventFullDto() {
         //Подготовка
-        Event event = TestHelper.createEvent(1L, 1L);
+        Event event = TestHelper.createEvent(1L,1L, 1L);
         Mockito.when(stubCategoryRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(TestHelper.createCategory(1L)));
         User user = TestHelper.createUser(1L, "user@email.ru");
         Mockito.when(stubUserRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user));
@@ -67,7 +67,7 @@ class EventMapperTest {
     @Test
     void toEventShortDto_Event_ReturnsEventShortDto() {
         //Подготовка
-        Event event = TestHelper.createEvent(1L, 1L);
+        Event event = TestHelper.createEvent(1L,1L, 1L);
         Category category = TestHelper.createCategory(1L);
         Mockito.when(stubCategoryRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(category));
 

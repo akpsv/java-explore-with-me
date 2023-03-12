@@ -9,12 +9,6 @@ import java.util.Optional;
 public interface EventRepositoryAdvanced {
     Event getFullEventInfoByUser(Long userId, Long eventId);
 
-//    List<Event> getEventsByPublicParams(EventParams params);
-//
-//    List<Event> getEventsByAdminParams(EventParams params);
-//
-//    List<Event> getEventsByUser(Long userId, Integer from, Integer size);
-
     List<Event> getEvents(EventParams params, CriteriaQueryPreparation<Event> queryPreparation) ;
 
     }

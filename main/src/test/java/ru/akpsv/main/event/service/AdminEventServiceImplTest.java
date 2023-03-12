@@ -6,7 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import ru.akpsv.TestHelper;
 import ru.akpsv.main.category.CategoryRepository;
 import ru.akpsv.main.category.model.Category;
@@ -23,7 +22,6 @@ import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class AdminEventServiceImplTest {
@@ -43,7 +41,7 @@ class AdminEventServiceImplTest {
     void checkAdminRequestAndFillUpdatingFilds_UpdateEventAdminRequestWithPublishEvent_ReturnsCorrectEventFullDto() {
         //Подготовка
         UpdateEventAdminRequest requestWitnPublishEvent = TestHelper.createUpdateEventAdminRequestWitnPublishEvent();
-        Event updatingEvent = TestHelper.createEvent(1L, 1L);
+        Event updatingEvent = TestHelper.createEvent(1L, 1L, 1L);
 //        EventRepository stubEventRepository = Mockito.mock(EventRepository.class);
 //        AdminEventServiceImpl adminEventService = new AdminEventServiceImpl(stubEventRepository);
 
@@ -56,8 +54,8 @@ class AdminEventServiceImplTest {
     @Test
     void updateEventByAdmin_UpdatingEventIdAndUpdatingRequest_ReturnsEventFullDto() {
         //Подготовка
-        Event updatingEvent = TestHelper.createEvent(1L, 1L);
-        Event expectedChangedEvent = TestHelper.createEvent(1L, 1L).toBuilder().annotation("changed annotation").build();
+        Event updatingEvent = TestHelper.createEvent(1L, 1L, 1L);
+        Event expectedChangedEvent = TestHelper.createEvent(1L, 1L, 1L).toBuilder().annotation("changed annotation").build();
         Mockito.when(stubEventRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(updatingEvent));
         Mockito.when(stubEventRepository.save(Mockito.any())).thenReturn(expectedChangedEvent);
 

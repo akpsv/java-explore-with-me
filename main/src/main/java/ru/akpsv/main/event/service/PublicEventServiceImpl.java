@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class PublicEventServiceImpl implements PublicEventService{
+public class PublicEventServiceImpl implements PublicEventService {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final EventRepository eventRepository;
@@ -36,12 +36,13 @@ public class PublicEventServiceImpl implements PublicEventService{
 
     @Override
     public List<EventShortDto> getEventsByPublicParams(EventParams params, HttpServletRequest request) {
-        RestClientService restClientService = new RestClientService(serverUrl, new RestTemplateBuilder());
         RequestDtoIn requestDtoIn = RequestDtoIn.builder()
                 .app("main-svc")
                 .uri(request.getRequestURI())
                 .ip(request.getRemoteAddr())
                 .timestamp(LocalDateTime.now().format(formatter)).build();
+
+        RestClientService restClientService = new RestClientService(serverUrl, new RestTemplateBuilder());
         int post = restClientService.post(requestDtoIn);
 
         return eventRepository.getEvents(params, preparePublicRequest()).stream()
@@ -84,18 +85,17 @@ public class PublicEventServiceImpl implements PublicEventService{
 
     @Override
     public EventFullDto getEventById(Long eventId, HttpServletRequest request) {
-        RestClientService restClientService = new RestClientService(serverUrl, new RestTemplateBuilder());
-
         RequestDtoIn requestDtoIn = RequestDtoIn.builder()
                 .app("main-svc")
                 .uri(request.getRequestURI())
                 .ip(request.getRemoteAddr())
                 .timestamp(LocalDateTime.now().format(formatter)).build();
+
+        RestClientService restClientService = new RestClientService(serverUrl, new RestTemplateBuilder());
         int post = restClientService.post(requestDtoIn);
 
         return eventRepository.findById(eventId)
                 .map(EventMapper::toEventFullDto)
-                .orElseThrow(() -> new NoSuchElementException("Event not foun"));
+                .orElseThrow(() -> new NoSuchElementException("Event with id=" + eventId + " not found"));
     }
-
 }

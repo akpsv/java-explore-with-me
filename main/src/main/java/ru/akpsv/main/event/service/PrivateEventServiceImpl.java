@@ -25,13 +25,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PrivateEventServiceImpl implements PrivateEventService{
+public class PrivateEventServiceImpl implements PrivateEventService {
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -51,9 +53,7 @@ public class PrivateEventServiceImpl implements PrivateEventService{
 
     @Override
     public List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size) {
-        EventParams eventParams = new EventParams();
-        eventParams.setFrom(from);
-        eventParams.setSize(size);
+        EventParams eventParams = EventParams.builder().from(from).size(size).build();
 
         CriteriaQueryPreparation<Event> request = (params, cb, cq, fromEvent) -> {
             cq.select(fromEvent).where(cb.equal(fromEvent.get(Event_.INITIATOR_ID), userId));
@@ -68,16 +68,12 @@ public class PrivateEventServiceImpl implements PrivateEventService{
 
     @Override
     public EventFullDto updateEventByCurrentUser(UpdateEventUserRequest updatingRequest, Long userId, Long eventId) {
-        String errorMessage = "Event with id=" + eventId + " and initiatorId=" + userId + " not exist";
         return eventRepository.getEventByInitiatorIdAndId(userId, eventId)
-                .map(event -> {
-                    Event updatedEvent = checkCurrentUserRequestAndFillUpdatingFields(updatingRequest, event);
-                    return EventMapper.toEventFullDto(updatedEvent);
-                })
-                .orElseThrow(() -> new NoSuchElementException(errorMessage));
+                .map(updatingEvent -> checkRequestAndSetFields(updatingRequest, updatingEvent))
+                .map(eventRepository::save)
+                .map(EventMapper::toEventFullDto)
+                .orElseThrow(() -> new NoSuchElementException("Event with id=" + eventId + " and initiatorId=" + userId + " not exist"));
     }
-
-
 
     /**
      * Проверка запроса на изменение и заполнение полей обновляемого события для текущего пользователя
@@ -86,14 +82,22 @@ public class PrivateEventServiceImpl implements PrivateEventService{
      * @param updatingEvent
      * @return
      */
-    protected Event checkCurrentUserRequestAndFillUpdatingFields(UpdateEventRequest request, Event updatingEvent) {
-        if (request.getEventDate() != null && LocalDateTime.parse(request.getEventDate(), formatter).isBefore(LocalDateTime.now())) {
-            throw new ViolationOfRestrictionsException("Changing event date is not correct");
-        }
-        updatingEvent = checkAndFillBaseFields(request, updatingEvent);
-        updatingEvent = checkUserConditionsAndFillStateField(request, updatingEvent);
-        return updatingEvent;
+    protected Event checkRequestAndSetFields(UpdateEventRequest request, Event updatingEvent) {
+        checkCorrectEventDate(request);
+        return Stream.of(updatingEvent)
+                .map(event -> checkAndSetBaseFields(request, event))
+                .map(event -> checkConditionsAndSetStateField(request, event))
+                .findFirst().get();
     }
+
+    protected void checkCorrectEventDate(UpdateEventRequest request) throws ViolationOfRestrictionsException {
+        Predicate<UpdateEventRequest> eventDateNotNull = req -> req.getEventDate() == null;
+        Predicate<UpdateEventRequest> eventDateAfter = req -> LocalDateTime.parse(req.getEventDate(), formatter).isBefore(LocalDateTime.now());
+        Optional.ofNullable(request)
+                .filter(eventDateNotNull.or(eventDateAfter))
+                .orElseThrow(() -> new ViolationOfRestrictionsException("Changing event date is not correct"));
+    }
+
     /**
      * Проверка всех полей кроме State на присутствие какого-то значения.
      * Если значение присутствует, то значение обновляется из запроса.
@@ -102,18 +106,15 @@ public class PrivateEventServiceImpl implements PrivateEventService{
      * @param updatingEvent
      * @return
      */
-    private Event checkAndFillBaseFields(UpdateEventRequest request, Event updatingEvent) {
+    protected Event checkAndSetBaseFields(UpdateEventRequest request, Event updatingEvent) {
         if (request.getAnnotation() != null)
             updatingEvent = updatingEvent.toBuilder().annotation(request.getAnnotation()).build();
         if (request.getCategory() != null)
             updatingEvent = updatingEvent.toBuilder().categoryId(request.getCategory()).build();
         if (request.getDescription() != null)
             updatingEvent = updatingEvent.toBuilder().description(request.getDescription()).build();
-
-        if (request.getEventDate() != null) {
+        if (request.getEventDate() != null)
             updatingEvent = updatingEvent.toBuilder().eventDate(LocalDateTime.parse(request.getEventDate(), formatter)).build();
-        }
-
         if (request.getLocation() != null)
             updatingEvent = updatingEvent.toBuilder().location(request.getLocation()).build();
         if (request.getPaid() != null)
@@ -135,29 +136,37 @@ public class PrivateEventServiceImpl implements PrivateEventService{
      * @param updatingEvent
      * @return
      */
-    private Event checkUserConditionsAndFillStateField(UpdateEventRequest request, Event updatingEvent) {
-        if (updatingEvent.getState().equals(EventState.PUBLISHED)) {
-            throw new ViolationOfRestrictionsException("Only pending or canceled events can be changed");
-        }
-        if (request.getStateAction() != null) {
-            //изменить можно только отмененные события или события в состоянии ожидания модерации (Ожидается код ошибки 409)
-            if (updatingEvent.getState().equals(EventState.CANCELED) || updatingEvent.getState().equals(EventState.PENDING)) {
-                //дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента (Ожидается код ошибки 409)
-                if (updatingEvent.getEventDate().minusHours(2).isAfter(LocalDateTime.now())) {
-                    if (request.getStateAction().equals(StateAction.SEND_TO_REVIEW.name())) {
-                        updatingEvent = updatingEvent.toBuilder().state(EventState.PENDING).build();
-                    } else if (request.getStateAction().equals(StateAction.CANCEL_REVIEW.name())) {
-                        updatingEvent = updatingEvent.toBuilder().state(EventState.CANCELED).build();
-                    }
-                } else {
-                    throw new ViolationOfRestrictionsException("EventDate not correct");
-                }
-            }
+    protected Event checkConditionsAndSetStateField(UpdateEventRequest request, Event updatingEvent) {
+        return Optional.ofNullable(request.getStateAction())
+                .map(unusedValue -> checkConditionsAndChangeEventState(request, updatingEvent))
+                .orElse(updatingEvent);
+    }
+
+    private Event checkConditionsAndChangeEventState(UpdateEventRequest request, Event updatingEvent) {
+        Predicate<Event> isEventStateNotPublished = event -> !event.getState().equals(EventState.PUBLISHED);
+        Predicate<Event> isEventStateCanceled = event -> event.getState().equals(EventState.CANCELED);
+        Predicate<Event> isEventStatePanding = event -> event.getState().equals(EventState.PENDING);
+        Predicate<Event> isEventDateAfterNow = event -> event.getEventDate().minusHours(2).isAfter(LocalDateTime.now());
+
+        return Optional.of(updatingEvent)
+                .filter(isEventStateNotPublished)
+                .filter(isEventStateCanceled.or(isEventStatePanding))
+                .filter(isEventDateAfterNow)
+                .map(event -> checkStateActionAndChangeEventState(request, event))
+                .orElseThrow(() -> new ViolationOfRestrictionsException("EventDate not correct"));
+    }
+
+    private Event checkStateActionAndChangeEventState(UpdateEventRequest request, Event updatingEvent) {
+        switch (request.getStateAction()){
+            case "SEND_TO_REVIEW":
+                updatingEvent = updatingEvent.toBuilder().state(EventState.PENDING).build();
+                break;
+            case "CANCEL_REVIEW":
+                updatingEvent = updatingEvent.toBuilder().state(EventState.CANCELED).build();
+                break;
         }
         return updatingEvent;
     }
-
-
 
 
     @Override

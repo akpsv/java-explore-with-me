@@ -60,11 +60,11 @@ public class TestHelper {
                 .build();
     }
 
-    public static Event createEvent(Long initiatorId, Long categoryId) {
+    public static Event createEvent(Long eventId, Long initiatorId, Long categoryId) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         return Event.builder()
-                .id(1L)
+                .id(eventId)
                 .annotation("annotation")
                 .categoryId(categoryId)
                 .description("description")

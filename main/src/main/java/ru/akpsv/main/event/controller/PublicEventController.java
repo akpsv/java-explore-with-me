@@ -35,24 +35,12 @@ public class PublicEventController {
                                                        @RequestParam Optional<String> sort,
                                                        @RequestParam(defaultValue = "0") Integer from,
                                                        @RequestParam(defaultValue = "10") Integer size,
-                                                       HttpServletRequest request
-    ) {
-        EventParams params = new EventParams();
-        params.setText(text);
-        params.setCategories(categories);
-        params.setPaid(paid);
-        params.setRangeStart(rangeStart);
-        params.setRangeEnd(rangeEnd);
-        params.setOnlyAvailable(onlyAvailable);
-        params.setSort(sort);
-        params.setFrom(from);
-        params.setSize(size);
+                                                       HttpServletRequest request) {
 
-        EventParams eventParams = EventParams.builder().from(0).paid(Optional.empty()).build();
+        EventParams params = EventParams.builder().text(text).categories(categories).paid(paid).rangeStart(rangeStart)
+                .rangeEnd(rangeEnd).onlyAvailable(onlyAvailable).sort(sort).from(from).size(size).build();
 
-        log.debug("Вызов метода eventService.getEventsByPublicParams c параметрами: params= {}, reqeust={}", params, request);
-        List<EventShortDto> eventsByPublicParams = publicEventService.getEventsByPublicParams(params, request);
-        return eventsByPublicParams;
+        return publicEventService.getEventsByPublicParams(params, request);
     }
 
     @GetMapping("/events/{id}")
