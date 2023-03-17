@@ -1,6 +1,6 @@
 package ru.akpsv.main.event.service;
 
-import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,10 +12,15 @@ import ru.akpsv.main.category.CategoryRepository;
 import ru.akpsv.main.category.dto.CategoryDto;
 import ru.akpsv.main.category.model.Category;
 import ru.akpsv.main.error.ViolationOfRestrictionsException;
+import ru.akpsv.main.event.EventRequestStatusUpdateRequest;
+import ru.akpsv.main.event.EventRequestStatusUpdateResult;
 import ru.akpsv.main.event.dto.*;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
 import ru.akpsv.main.event.repository.EventRepository;
+import ru.akpsv.main.request.model.Request;
+import ru.akpsv.main.request.model.RequestStatus;
+import ru.akpsv.main.request.repository.RequestRepository;
 import ru.akpsv.main.user.dto.UserShortDto;
 import ru.akpsv.main.user.model.User;
 import ru.akpsv.main.user.repository.UserRepository;
@@ -42,6 +47,9 @@ class PrivateEventServiceImplTest {
 
     @InjectMocks
     ru.akpsv.main.event.dto.EventMapper EventMapper;
+
+    @Mock
+    RequestRepository stubRequestRepository;
 
     @Test
     void create_NewEventDto_ReturnsEventFullDto() {
@@ -134,7 +142,7 @@ class PrivateEventServiceImplTest {
 
         //Действия
         ViolationOfRestrictionsException exception = org.junit.jupiter.api.Assertions.assertThrows(ViolationOfRestrictionsException.class,
-                ()->privateEventService.checkRequestAndSetFields(request, updatingEvent ));
+                () -> privateEventService.checkRequestAndSetFields(request, updatingEvent));
         //Проверка
         assertThat(exception.getMessage(), containsString("event date is not correct"));
     }
@@ -151,5 +159,111 @@ class PrivateEventServiceImplTest {
         EventState actualEventState = privateEventService.checkConditionsAndSetStateField(updatingRequest, updatingEvent).getState();
         //Проверка
         assertThat(actualEventState, equalTo(expectedEventState));
+    }
+
+    @Test
+    void confirmRequestIfLimitIsZeroOrPreModerationIsFalse_LimitIsZeroOrPreMderationIsFalse_ConfirmationIsNotRequired() {
+        //Если лимит заявок установлен в ноль или предварительная модерация отключена подтверждение заявок не требуется
+        //и они автоматически одобряются
+        //Подготовка
+        EventRequestStatusUpdateRequest updatingReqeust = EventRequestStatusUpdateRequest.builder().status("CONFIRMED").requestIds(List.of(1L, 2L)).build();
+
+        Request request1 = TestHelper.createRequest(1L, 1L, RequestStatus.PENDING);
+        Request request2 = TestHelper.createRequest(2L, 1L, RequestStatus.PENDING);
+
+        int expectedNumberConfirmedRequest = 2;
+        //Действия
+        EventRequestStatusUpdateResult eventRequestStatusUpdateResult = privateEventService.confirmRequestIfLimitIsZeroOrPreModerationIsFalse(
+                updatingReqeust,
+                List.of(request1, request2)
+        );
+        int actualNumberConfirmedRequests = eventRequestStatusUpdateResult.getConfirmedRequests().size();
+
+        //Проверка
+        assertThat(actualNumberConfirmedRequests, equalTo(expectedNumberConfirmedRequest));
+        assertThat(eventRequestStatusUpdateResult.getConfirmedRequests().get(0).getStatus(), equalTo("CONFIRMED"));
+        assertThat(eventRequestStatusUpdateResult.getConfirmedRequests().get(1).getStatus(), equalTo("CONFIRMED"));
+    }
+
+    @Disabled
+    @Test
+    void changeRequestsStatusCurrentUser() {
+        //Подготовка
+        Long userId = 1L;
+        Long eventId = 1L;
+        Event event = TestHelper.createEvent(1L, 1L, 1L);
+        Mockito.when(stubEventRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(event));
+
+        EventRequestStatusUpdateRequest updatingRequestStatus = EventRequestStatusUpdateRequest.builder()
+                .status("CONFIRMED")
+                .requestIds(List.of(1L))
+                .build();
+
+
+        int expectedNumberRequests = 1;
+        //Действия
+        EventRequestStatusUpdateResult eventRequestStatusUpdateResult = privateEventService.changeRequestsStatusCurrentUser(updatingRequestStatus, userId, eventId);
+        int actualNumberRequests = eventRequestStatusUpdateResult.getConfirmedRequests().size();
+
+        //Проверка
+        assertThat(actualNumberRequests, equalTo(expectedNumberRequests));
+    }
+
+    @Test
+    void getAndCheckPendingRequests_IdOfRequestWithPendingStatus_ReturnsPendingRequests() {
+        //Подготовка
+        Request request = TestHelper.createRequest(1L, 1L, RequestStatus.PENDING);
+        Mockito.when(stubRequestRepository.getRequestsFromList(Mockito.any(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(List.of(request));
+        EventRequestStatusUpdateRequest updateRequestStatus = EventRequestStatusUpdateRequest.builder()
+                .requestIds(List.of(1L))
+                .status("CONFIRMED")
+                .build();
+        Long userId = 1L;
+        Long eventId = 1L;
+
+        int expectedNumberPendingRequests = 1;
+        //Действия
+        List<Request> actualPendingRequests = privateEventService.getAndCheckPendingRequests(updateRequestStatus, userId, eventId);
+        //Проверка
+        assertThat(actualPendingRequests.size(), equalTo(expectedNumberPendingRequests));
+    }
+
+    @Test
+    void getAndCheckPendingRequests_IdOfRequestWithoutPendingStatus_ThrowViolationOfRestrictionsException() {
+        //Подготовка
+        Request request = TestHelper.createRequest(1L, 1L, RequestStatus.CONFIRMED);
+        Mockito.when(stubRequestRepository.getRequestsFromList(Mockito.any(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(List.of(request));
+        EventRequestStatusUpdateRequest updateRequestStatus = EventRequestStatusUpdateRequest.builder()
+                .requestIds(List.of(1L))
+                .status("CONFIRMED")
+                .build();
+        Long userId = 1L;
+        Long eventId = 1L;
+
+        //Действия
+        ViolationOfRestrictionsException exception = org.junit.jupiter.api.Assertions.assertThrows(ViolationOfRestrictionsException.class,
+                () -> privateEventService.getAndCheckPendingRequests(updateRequestStatus, userId, eventId));
+        //Проверка
+        assertThat(exception.getMessage(), containsString("conditions are not met"));
+    }
+
+    @Test
+    void handleGroupOfRequests_PendingRequestWithCorrectConditions_ReturnsConfirmedRequest() {
+        //Подготовк
+        Event event = TestHelper.createEvent(1L, 1L, 1L);
+        EventRequestStatusUpdateRequest updatingReqeust = EventRequestStatusUpdateRequest.builder().status("CONFIRMED").requestIds(List.of(1L, 2L)).build();
+
+        Request request1 = TestHelper.createRequest(1L, 1L, RequestStatus.PENDING);
+//        Request request2 = TestHelper.createRequest(2L, 1L, RequestStatus.PENDING);
+        Mockito.when(stubRequestRepository.save(Mockito.any())).thenReturn(request1.toBuilder().status(RequestStatus.CONFIRMED).build());
+
+        int expectedNumberRequests = 1;
+        //Действия
+        EventRequestStatusUpdateResult eventRequestStatusUpdateResult = privateEventService.handleGroupOfRequests(updatingReqeust, event, List.of(request1));
+        int actualNumberRequests = eventRequestStatusUpdateResult.getConfirmedRequests().size();
+        //Проверка
+        assertThat(actualNumberRequests, equalTo(expectedNumberRequests));
+        assertThat(eventRequestStatusUpdateResult.getConfirmedRequests().get(0).getStatus(), equalTo("CONFIRMED"));
+
     }
 }

@@ -15,8 +15,6 @@ public interface PrivateEventService {
 
     List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size);
 
-
-
     EventFullDto getFullEventInfoByUser(Long userId, Long eventId);
 
     EventFullDto updateEventByCurrentUser(UpdateEventUserRequest updatingRequest, Long userId, Long eventId);

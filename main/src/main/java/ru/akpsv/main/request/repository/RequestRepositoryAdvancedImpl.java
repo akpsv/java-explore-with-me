@@ -16,7 +16,7 @@ import java.util.List;
 public class RequestRepositoryAdvancedImpl implements RequestRepositoryAdvanced{
     @PersistenceContext
     private EntityManager em;
-    public List<Request> getRequestsFromList(Long[] requestIds, Long userId, Long eventId) {
+    public List<Request> getRequestsFromList(List<Long> requestIds, Long userId, Long eventId) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Request> cq = cb.createQuery(Request.class);
         Root<Request> fromRequest = cq.from(Request.class);

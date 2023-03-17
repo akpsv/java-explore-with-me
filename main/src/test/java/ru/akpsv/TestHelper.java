@@ -11,6 +11,8 @@ import ru.akpsv.main.event.dto.UpdateEventAdminRequest;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
 import ru.akpsv.main.event.model.Location;
+import ru.akpsv.main.request.model.Request;
+import ru.akpsv.main.request.model.RequestStatus;
 import ru.akpsv.main.user.dto.NewUserRequest;
 import ru.akpsv.main.user.dto.UserDto;
 import ru.akpsv.main.user.dto.UserShortDto;
@@ -74,7 +76,7 @@ public class TestHelper {
                 .location(new Location(37.617698, 55.755864))
                 .initiatorId(initiatorId)
                 .paid(false)
-                .participantLimit(0L)
+                .participantLimit(10L)
                 .confirmedRequests(0L)
                 .availableToParicipants(false)
                 .requestModeration(true)
@@ -163,5 +165,15 @@ public class TestHelper {
                 .paid(false)
                 .build();
 
+    }
+
+    public static Request createRequest(Long requestId, Long requestorId, RequestStatus status) {
+        return Request.builder()
+                .id(requestId)
+                .requesterId(requestorId)
+                .status(status)
+                .eventId(1L)
+                .created(LocalDateTime.now())
+                .build();
     }
 }

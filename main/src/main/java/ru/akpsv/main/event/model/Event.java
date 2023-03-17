@@ -34,8 +34,6 @@ public class Event {
     @Column(name = "category_id")
     private Long categoryId;
 
-    @Column(name = "confirmed_requests")
-    private Long confirmedRequests; //Количество одобренных заявок на участие в данном событии TODO:(Заполняется в процессе работы)
 
     @CreationTimestamp
     @Column(name = "created_on")
@@ -54,6 +52,9 @@ public class Event {
 
     @Column(name = "participant_limit")
     private Long participantLimit;//Ограничение на количество участников. Значение 0 - означает отсутствие ограничения
+
+    @Column(name = "confirmed_requests")
+    private Long confirmedRequests; //Количество одобренных заявок на участие в данном событии TODO:(Заполняется в процессе работы)
 
     @Column(name = "available_to_participants")
     private Boolean availableToParicipants; //доступность для участия

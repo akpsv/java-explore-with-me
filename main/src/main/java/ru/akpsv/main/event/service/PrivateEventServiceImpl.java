@@ -27,8 +27,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
@@ -62,7 +63,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
         return eventRepository.getEvents(eventParams, request).stream()
                 .map(EventMapper::toEventShortDto)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
 
@@ -157,7 +158,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     }
 
     private Event checkStateActionAndChangeEventState(UpdateEventRequest request, Event updatingEvent) {
-        switch (request.getStateAction()){
+        switch (request.getStateAction()) {
             case "SEND_TO_REVIEW":
                 updatingEvent = updatingEvent.toBuilder().state(EventState.PENDING).build();
                 break;
@@ -179,7 +180,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     public List<ParticipationRequestDto> getRequestsOfParticipantsEventOfCurrentUser(Long eventId) {
         return requestRepository.getRequestsByEventId(eventId).stream()
                 .map(RequestMapper::toParticipationRequestDto)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     /**
@@ -192,50 +193,151 @@ public class PrivateEventServiceImpl implements PrivateEventService {
      */
     @Override
     public EventRequestStatusUpdateResult changeRequestsStatusCurrentUser(EventRequestStatusUpdateRequest updateRequestStatus, Long userId, Long eventId) {
-        //Проверка, что заявка принадлежит текущему пользователю
         log.debug("Проверка, что заявка принадлежит текущему пользователю");
-        Event event = eventRepository.findById(eventId)
+        Event event = checkEventOwner(userId, eventId);
+
+        log.debug("Проверка, что заявка находится в статусе ожидания (PENDING)");
+        List<Request> pendingRequests = getAndCheckPendingRequests(updateRequestStatus, userId, eventId);
+
+        log.debug("Проверка отключения лимита заявок и пре-модерации");
+        if (event.getParticipantLimit() == 0 || !event.getRequestModeration())
+            confirmRequestIfLimitIsZeroOrPreModerationIsFalse(updateRequestStatus, pendingRequests);
+
+        //нельзя подтвердить заявку, если уже достигнут лимит по заявкам на данное событие (Ожидается код ошибки 409)
+        log.debug("Проверка достижения лимита по заявкам на данное событие (Ожидается код ошибки 409)");
+        if (event.getConfirmedRequests() >= event.getParticipantLimit())
+            throw new LimitReachedException("The participant limit has been reached");
+
+        log.debug("Выполнение обработки заявок");
+        return handleGroupOfRequests(updateRequestStatus, event, pendingRequests);
+    }
+
+    /**
+     * Проверка принадлежности события запрашивающему пользователю
+     * @param userId
+     * @param eventId
+     * @return
+     */
+    protected Event checkEventOwner(Long userId, Long eventId) {
+        return eventRepository.findById(eventId)
                 .filter(someEvent -> someEvent.getInitiatorId().equals(userId))
                 .orElseThrow(() -> new NoSuchElementException("Event with id=" + eventId + " was not found"));
-        //если для события лимит заявок равен 0 или отключена пре-модерация заявок, то подтверждение заявок не требуется
-        log.debug("Проверка лимита заявок и пре-модерации");
-        if (event.getParticipantLimit() == 0 || !event.getRequestModeration()) {
-            return new EventRequestStatusUpdateResult();
-        }
-        //нельзя подтвердить заявку, если уже достигнут лимит по заявкам на данное событие (Ожидается код ошибки 409)
-        if (event.getParticipantLimit().equals(event.getConfirmedRequests())) {
-            throw new LimitReachedException("The participant limit has been reached");
-        }
+    }
 
-        log.debug("Получение заявок из репозитория");
-        List<Request> requestsFromList = requestRepository.getRequestsFromList(updateRequestStatus.getRequestIds(), userId, eventId);
-
+    protected EventRequestStatusUpdateResult handleGroupOfRequests(EventRequestStatusUpdateRequest updateRequestStatus, Event event, List<Request> pendingRequests) {
         List<ParticipationRequestDto> confirmedRequests = new ArrayList<>();
         List<ParticipationRequestDto> rejectedRequests = new ArrayList<>();
 
-        //если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить
+        //TODO: если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить
         log.debug("Обработать заявки в соответствии с лимитом. Отклонение заявок которым не хватило разрешений.");
-        for (Request request : requestsFromList) {
-            if (!event.getParticipantLimit().equals(event.getConfirmedRequests())) {
-                Event eventWithLimit = event.toBuilder().confirmedRequests(event.getConfirmedRequests() + 1).build();
-                eventRepository.save(eventWithLimit);
-                Request requestWithChangedStatus = request.toBuilder().status(RequestStatus.valueOf(updateRequestStatus.getStatus())).build();
-                Request savedUpdatedReqeust = requestRepository.save(requestWithChangedStatus);
-                if (updateRequestStatus.getStatus().equals(RequestStatus.REJECTED.name())) {
-                    rejectedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
-                } else if (updateRequestStatus.getStatus().equals(RequestStatus.CONFIRMED.name())) {
-                    confirmedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
-                }
-            } else {
-                Request requestWithChangedStatus = request.toBuilder().status(RequestStatus.REJECTED).build();
-                Request savedUpdatedReqeust = requestRepository.save(requestWithChangedStatus);
-                rejectedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
-            }
+        //TODO: Если статус заявок обновляется на CONFIRMED, то происходит обработка, иначе все заявки отклоняются
+        if (updateRequestStatus.getStatus().equals(RequestStatus.CONFIRMED.name())) {
+            //TODO: если лимит подтверждённых заявок ещё не исчерпан, то заявка одобряется, иначе отклоняется
+            pendingRequests.stream()
+                    .forEach(request -> {
+                        if (event.getConfirmedRequests() < event.getParticipantLimit()) {
+                            updateCountOfConfirmedRequests(event);
+
+                            Stream.of(request)
+                                    .map(changingRequest -> changingRequest.toBuilder().status(RequestStatus.CONFIRMED).build())
+                                    .map(requestRepository::save)
+                                    .map(RequestMapper::toParticipationRequestDto)
+                                    .forEach(confirmedRequests::add);
+                        } else
+                            rejectRequests(request).ifPresent(rejectedRequests::add); //TODO: отклонить все оставшиеся заявки
+                    });
+        } else if (updateRequestStatus.getStatus().equals(RequestStatus.REJECTED.name())) {
+            //TODO: отклонить все заявки
+            pendingRequests.stream()
+                    .map(this::rejectRequests)
+                    .map(Optional::get)
+                    .forEach(rejectedRequests::add);
         }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        for (Request request : pendingRequests) {
+//
+//            if (event.getConfirmedRequests() < event.getParticipantLimit()) {
+//                //Увеличить количество подтверждённых заявок
+//                Event eventWithLimit = event.toBuilder().confirmedRequests(event.getConfirmedRequests() + 1).build();
+//                eventRepository.save(eventWithLimit);
+//                //Изменить статус заявки на требуемый в запросе и сохранить заявку
+//                Request requestWithChangedStatus = request.toBuilder().status(RequestStatus.valueOf(updateRequestStatus.getStatus())).build();
+//                Request savedUpdatedReqeust = requestRepository.save(requestWithChangedStatus);
+//                //Если надо было отклонить заявку, то добавить с группу отклонённых иначе добавить в группу подтверждённых
+//                if (updateRequestStatus.getStatus().equals(RequestStatus.REJECTED.name())) {
+//                    rejectedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
+//                } else if (updateRequestStatus.getStatus().equals(RequestStatus.CONFIRMED.name())) {
+//                    confirmedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
+//                }
+//            } else {
+//                Request requestWithChangedStatus = request.toBuilder().status(RequestStatus.REJECTED).build();
+//                Request savedUpdatedReqeust = requestRepository.save(requestWithChangedStatus);
+//                rejectedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
+//            }
+//        }
+
         log.debug("Вернуть список заявок");
         return EventRequestStatusUpdateResult.builder()
                 .confirmedRequests(confirmedRequests)
                 .rejectedRequests(rejectedRequests)
                 .build();
+
+    }
+
+    protected Optional<ParticipationRequestDto> rejectRequests(Request request) {
+        return Stream.of(request)
+                .map(changingRequest -> changingRequest.toBuilder().status(RequestStatus.REJECTED).build())
+                .map(requestRepository::save)
+                .map(RequestMapper::toParticipationRequestDto)
+                .findFirst();
+    }
+
+    protected void updateCountOfConfirmedRequests(Event event) {
+        Stream.of(event)
+                .map(updatingEvent -> updatingEvent.toBuilder().confirmedRequests(updatingEvent.getConfirmedRequests() + 1).build())
+                .forEach(eventRepository::save);
+    }
+
+    /**
+     * Получить запросы на участие в событии и проверить что они находятся в статусе ожидания
+     * иначе выбросить исключение о нарушении ограничений
+     *
+     * @param updateRequestStatus
+     * @param userId
+     * @param eventId
+     * @return
+     */
+    protected List<Request> getAndCheckPendingRequests(EventRequestStatusUpdateRequest updateRequestStatus,
+                                                     Long userId, Long eventId) {
+        log.debug("Получение заявок из репозитория");
+        return requestRepository.getRequestsFromList(updateRequestStatus.getRequestIds(), userId, eventId)
+                .stream()
+                .map(request -> {
+                            if (!request.getStatus().equals(RequestStatus.PENDING))
+                                throw new ViolationOfRestrictionsException("\"For the requested operation the conditions are not met.");
+                            return request;
+                        }
+                )
+                .collect(toList());
+    }
+
+    protected EventRequestStatusUpdateResult confirmRequestIfLimitIsZeroOrPreModerationIsFalse(
+            EventRequestStatusUpdateRequest updatingRequest,
+            List<Request> pendingRequests
+    ) {
+        log.debug("Авто согласование заявок не требующих подтвердждения");
+        //TODO: Согласовать все заявки и добавить в группу подтверждённых
+        List<ParticipationRequestDto> requestWithChangedStatus = pendingRequests.stream()
+                .map(request -> request.toBuilder().status(RequestStatus.valueOf(updatingRequest.getStatus())).build())
+                .map(RequestMapper::toParticipationRequestDto)
+                .collect(toList());
+
+        RequestStatus requestStatus = RequestStatus.valueOf(updatingRequest.getStatus());
+        if (requestStatus.equals(RequestStatus.CONFIRMED))
+            return EventRequestStatusUpdateResult.builder().confirmedRequests(requestWithChangedStatus).build();
+        else if (requestStatus.equals(RequestStatus.REJECTED))
+            return EventRequestStatusUpdateResult.builder().rejectedRequests(requestWithChangedStatus).build();
+        else throw new ViolationOfRestrictionsException("RequestStatus is incorrect.");
     }
 }
