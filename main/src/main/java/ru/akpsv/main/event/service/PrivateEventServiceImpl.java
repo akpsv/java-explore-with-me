@@ -41,11 +41,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
     @Override
     public EventFullDto create(Long userId, NewEventDto newEvent) {
-        Event event = EventMapper.toEvent(newEvent, userId)
-                .toBuilder()
-                .state(EventState.PENDING)
-                .build();
-        return Stream.of(event)
+        return Stream.of(EventMapper.toEvent(newEvent, userId))
                 .map(eventRepository::save)
                 .map(EventMapper::toEventFullDto)
                 .findFirst()
@@ -254,35 +250,11 @@ public class PrivateEventServiceImpl implements PrivateEventService {
                     .forEach(rejectedRequests::add);
         }
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//        for (Request request : pendingRequests) {
-//
-//            if (event.getConfirmedRequests() < event.getParticipantLimit()) {
-//                //Увеличить количество подтверждённых заявок
-//                Event eventWithLimit = event.toBuilder().confirmedRequests(event.getConfirmedRequests() + 1).build();
-//                eventRepository.save(eventWithLimit);
-//                //Изменить статус заявки на требуемый в запросе и сохранить заявку
-//                Request requestWithChangedStatus = request.toBuilder().status(RequestStatus.valueOf(updateRequestStatus.getStatus())).build();
-//                Request savedUpdatedReqeust = requestRepository.save(requestWithChangedStatus);
-//                //Если надо было отклонить заявку, то добавить с группу отклонённых иначе добавить в группу подтверждённых
-//                if (updateRequestStatus.getStatus().equals(RequestStatus.REJECTED.name())) {
-//                    rejectedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
-//                } else if (updateRequestStatus.getStatus().equals(RequestStatus.CONFIRMED.name())) {
-//                    confirmedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
-//                }
-//            } else {
-//                Request requestWithChangedStatus = request.toBuilder().status(RequestStatus.REJECTED).build();
-//                Request savedUpdatedReqeust = requestRepository.save(requestWithChangedStatus);
-//                rejectedRequests.add(RequestMapper.toParticipationRequestDto(savedUpdatedReqeust));
-//            }
-//        }
-
         log.debug("Вернуть список заявок");
         return EventRequestStatusUpdateResult.builder()
                 .confirmedRequests(confirmedRequests)
                 .rejectedRequests(rejectedRequests)
                 .build();
-
     }
 
     protected Optional<ParticipationRequestDto> rejectRequests(Request request) {

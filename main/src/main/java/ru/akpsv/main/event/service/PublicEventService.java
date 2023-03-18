@@ -10,6 +10,6 @@ import java.util.List;
 public interface PublicEventService {
     List<EventShortDto> getEventsByPublicParams(EventParams params, HttpServletRequest request);
 
-    EventFullDto getEventById(Long eventId, HttpServletRequest request);
+    EventFullDto registerViewAndGetEventById(Long eventId, HttpServletRequest request);
 
 }

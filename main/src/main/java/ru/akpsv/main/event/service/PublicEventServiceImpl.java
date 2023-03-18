@@ -36,21 +36,19 @@ public class PublicEventServiceImpl implements PublicEventService {
 
     @Override
     public List<EventShortDto> getEventsByPublicParams(EventParams params, HttpServletRequest request) {
-        List<EventShortDto> eventFullDtos = getEventShortDtosByParams(params);
+        List<EventShortDto> eventShortDtos = getEventShortDtosByParams(params);
         registerRequestInStatSvc(request);
-        return eventFullDtos;
+        return eventShortDtos;
     }
 
     private List<EventShortDto> getEventShortDtosByParams(EventParams params) {
-        List<EventShortDto> eventFullDtos = eventRepository.getEvents(params, preparePublicRequest()).stream()
+        return eventRepository.getEvents(params, preparePublicRequest()).stream()
                 .map(EventMapper::toEventShortDto)
                 .collect(Collectors.toList());
-        return eventFullDtos;
     }
 
     private CriteriaQueryPreparation<Event> preparePublicRequest() {
         return (params, cb, cq, fromEvent) -> {
-//            EventParams params = eventParams.orElseThrow(() -> new NoSuchElementException("Parameters not passed."));
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(fromEvent.get(Event_.STATE), EventState.PUBLISHED));
             params.getText().ifPresent(text -> predicates.add(cb.or(
@@ -82,7 +80,7 @@ public class PublicEventServiceImpl implements PublicEventService {
     }
 
     @Override
-    public EventFullDto getEventById(Long eventId, HttpServletRequest request) {
+    public EventFullDto registerViewAndGetEventById(Long eventId, HttpServletRequest request) {
         EventFullDto eventFullDto = registerViewAndGetEventFullDto(eventId);
         registerRequestInStatSvc(request);
         return eventFullDto;
@@ -94,12 +92,11 @@ public class PublicEventServiceImpl implements PublicEventService {
      * @return - EventFullDto с увеличенным количеством просмотров
      */
     protected EventFullDto registerViewAndGetEventFullDto(Long eventId) {
-        EventFullDto eventFullDto = eventRepository.findById(eventId)
+        return eventRepository.findById(eventId)
                 .map(event -> event.toBuilder().views(event.getViews()+1).build())
                 .map(eventRepository::save)
                 .map(EventMapper::toEventFullDto)
                 .orElseThrow(() -> new NoSuchElementException("Event with id=" + eventId + " not found"));
-        return eventFullDto;
     }
 
     /**

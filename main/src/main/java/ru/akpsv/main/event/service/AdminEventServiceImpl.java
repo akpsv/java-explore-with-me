@@ -37,7 +37,6 @@ public class AdminEventServiceImpl implements AdminEventService {
 
     private CriteriaQueryPreparation<Event> prepareAdminRequest() {
         return (params, cb, cq, fromEvent) -> {
-//            EventParams params = eventParams.orElseThrow(() -> new NoSuchElementException("Parameters not passed."));
             List<Predicate> predicates = new ArrayList<>();
             params.getUsers().ifPresent(userIds -> predicates.add(fromEvent.get(Event_.INITIATOR_ID).in(userIds)));
             params.getStates()
