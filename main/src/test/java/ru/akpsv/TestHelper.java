@@ -65,6 +65,7 @@ public class TestHelper {
     public static Event createEvent(Long eventId, Long initiatorId, Long categoryId) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+
         return Event.builder()
                 .id(eventId)
                 .annotation("annotation")
@@ -83,6 +84,31 @@ public class TestHelper {
                 .state(EventState.PENDING)
                 .title("title")
                 .views(0L)
+                .build();
+    }
+
+    public static Event createEventWithView(Long eventId, Long initiatorId, Long categoryId, Long view) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+
+        return Event.builder()
+                .id(eventId)
+                .annotation("annotation")
+                .categoryId(categoryId)
+                .description("description")
+                .createdOn(LocalDateTime.parse("2024-10-31 17:10:05", formatter))
+                .eventDate(LocalDateTime.parse("2024-12-31 17:10:05", formatter))
+                .publishedOn(LocalDateTime.parse("2024-12-31 15:10:05", formatter))
+                .location(new Location(37.617698, 55.755864))
+                .initiatorId(initiatorId)
+                .paid(false)
+                .participantLimit(10L)
+                .confirmedRequests(0L)
+                .availableToParicipants(false)
+                .requestModeration(true)
+                .state(EventState.PENDING)
+                .title("title")
+                .views(view)
                 .build();
     }
 

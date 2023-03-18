@@ -67,6 +67,7 @@ public class Event {
 
     @Column(name = "state")
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private EventState state = EventState.PENDING;           //Список состояний жизненного цикла события Enum: [ PENDING, PUBLISHED, CANCELED ] TODO:(Заполняется во время создания)
 
     @NotBlank
@@ -74,5 +75,6 @@ public class Event {
     private String title;           //Заголовок
 
     @Column(name = "views")
-    private Long views;             //Количество просмотрев события TODO:(Заполняется во время работы)
+    @Builder.Default
+    private Long views = 0L;             //Количество просмотрев события TODO:(Заполняется во время работы)
 }

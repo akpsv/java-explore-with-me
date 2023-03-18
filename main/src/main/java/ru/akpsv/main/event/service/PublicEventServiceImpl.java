@@ -36,18 +36,16 @@ public class PublicEventServiceImpl implements PublicEventService {
 
     @Override
     public List<EventShortDto> getEventsByPublicParams(EventParams params, HttpServletRequest request) {
-        RequestDtoIn requestDtoIn = RequestDtoIn.builder()
-                .app("main-svc")
-                .uri(request.getRequestURI())
-                .ip(request.getRemoteAddr())
-                .timestamp(LocalDateTime.now().format(formatter)).build();
+        List<EventShortDto> eventFullDtos = getEventShortDtosByParams(params);
+        registerRequestInStatSvc(request);
+        return eventFullDtos;
+    }
 
-        RestClientService restClientService = new RestClientService(serverUrl, new RestTemplateBuilder());
-        int post = restClientService.post(requestDtoIn);
-
-        return eventRepository.getEvents(params, preparePublicRequest()).stream()
+    private List<EventShortDto> getEventShortDtosByParams(EventParams params) {
+        List<EventShortDto> eventFullDtos = eventRepository.getEvents(params, preparePublicRequest()).stream()
                 .map(EventMapper::toEventShortDto)
                 .collect(Collectors.toList());
+        return eventFullDtos;
     }
 
     private CriteriaQueryPreparation<Event> preparePublicRequest() {
@@ -85,6 +83,32 @@ public class PublicEventServiceImpl implements PublicEventService {
 
     @Override
     public EventFullDto getEventById(Long eventId, HttpServletRequest request) {
+        EventFullDto eventFullDto = registerViewAndGetEventFullDto(eventId);
+        registerRequestInStatSvc(request);
+        return eventFullDto;
+    }
+
+    /**
+     * Зарегистрировать просмотр и вернуть обновлённый EventFullDto
+     * @param eventId - ид события
+     * @return - EventFullDto с увеличенным количеством просмотров
+     */
+    protected EventFullDto registerViewAndGetEventFullDto(Long eventId) {
+        EventFullDto eventFullDto = eventRepository.findById(eventId)
+                .map(event -> event.toBuilder().views(event.getViews()+1).build())
+                .map(eventRepository::save)
+                .map(EventMapper::toEventFullDto)
+                .orElseThrow(() -> new NoSuchElementException("Event with id=" + eventId + " not found"));
+        return eventFullDto;
+    }
+
+    /**
+     * Зарегистрировать запрос на сервере статистики
+     *
+     * @param request - данные запроса
+     * @return - код http ответа
+     */
+    private int registerRequestInStatSvc(HttpServletRequest request) {
         RequestDtoIn requestDtoIn = RequestDtoIn.builder()
                 .app("main-svc")
                 .uri(request.getRequestURI())
@@ -92,10 +116,6 @@ public class PublicEventServiceImpl implements PublicEventService {
                 .timestamp(LocalDateTime.now().format(formatter)).build();
 
         RestClientService restClientService = new RestClientService(serverUrl, new RestTemplateBuilder());
-        int post = restClientService.post(requestDtoIn);
-
-        return eventRepository.findById(eventId)
-                .map(EventMapper::toEventFullDto)
-                .orElseThrow(() -> new NoSuchElementException("Event with id=" + eventId + " not found"));
+        return restClientService.post(requestDtoIn);
     }
 }
