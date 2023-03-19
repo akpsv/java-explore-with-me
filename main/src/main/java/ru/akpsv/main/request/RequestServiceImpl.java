@@ -3,9 +3,9 @@ package ru.akpsv.main.request;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.akpsv.main.error.ViolationOfRestrictionsException;
-import ru.akpsv.main.event.repository.EventRepository;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
+import ru.akpsv.main.event.repository.EventRepository;
 import ru.akpsv.main.request.dto.ParticipationRequestDto;
 import ru.akpsv.main.request.dto.RequestMapper;
 import ru.akpsv.main.request.model.Request;
@@ -16,6 +16,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,25 +29,33 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public ParticipationRequestDto create(Long userId, Long eventId) {
-        Event checkedEvent = eventRepository.findById(eventId).filter(event -> !event.getInitiatorId().equals(userId))
+        Event checkedEvent = eventRepository.findById(eventId)
+                //инициатор события не может добавить запрос на участие в своём событии (Ожидается код ошибки 409)
+                .filter(event -> !event.getInitiatorId().equals(userId))
+                //нельзя участвовать в неопубликованном событии (Ожидается код ошибки 409)
                 .filter(event -> event.getState().equals(EventState.PUBLISHED))
-                .filter(event -> !event.getParticipantLimit().equals(event.getConfirmedRequests()))
-                .orElseThrow(() -> new ViolationOfRestrictionsException("Initiator of event cannot to add a request"));
+                .orElseThrow(() -> new ViolationOfRestrictionsException("Integrity constraint has been violated"));
 
-        Request request = Request.builder()
-                .requesterId(userId)
-                .eventId(eventId)
-                .status(RequestStatus.PENDING)
-                .build();
-
-        if (checkedEvent.getRequestModeration().equals(false)) {
+        Request request = null;
+        if (!checkedEvent.getRequestModeration()) {
             request = request.toBuilder().status(RequestStatus.CONFIRMED).build();
             checkedEvent = checkedEvent.toBuilder().confirmedRequests(checkedEvent.getConfirmedRequests() + 1).build();
             eventRepository.save(checkedEvent);
+        } else if (!checkedEvent.getAvailableToParicipants()) {
+            //если у события достигнут лимит запросов на участие - необходимо вернуть ошибку (Ожидается код ошибки 409)
+            throw new ViolationOfRestrictionsException("Integrity constraint has been violated");
+        } else {
+            request = Request.builder()
+                    .requesterId(userId)
+                    .eventId(eventId)
+                    .status(RequestStatus.PENDING)
+                    .build();
         }
-
-        Request savedRequest = requestRepository.save(request);
-        return RequestMapper.toParticipationRequestDto(savedRequest);
+        //TODO: нельзя добавить повторный запрос (Ожидается код ошибки 409)
+        return Optional.ofNullable(request)
+                .map(requestRepository::save)
+                .map(RequestMapper::toParticipationRequestDto)
+                .orElseThrow(() -> new NoSuchElementException("Request not saved."));
     }
 
     @Override

@@ -58,7 +58,9 @@ public class PublicEventServiceImpl implements PublicEventService {
             ));
             params.getCategories().ifPresent(categoryIds -> predicates.add(fromEvent.get(Event_.CATEGORY_ID).in(categoryIds)));
             params.getPaid().ifPresent(paid -> predicates.add(cb.equal(fromEvent.get(Event_.PAID), paid)));
-            params.getOnlyAvailable().ifPresent(available -> predicates.add(cb.equal(fromEvent.get(Event_.AVAILABLE_TO_PARICIPANTS), available)));
+            params.getOnlyAvailable()
+                    .filter("true"::equals)
+                    .ifPresent(available -> predicates.add(cb.equal(fromEvent.get(Event_.AVAILABLE_TO_PARICIPANTS), available)));
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             params.getRangeStart()
@@ -88,12 +90,13 @@ public class PublicEventServiceImpl implements PublicEventService {
 
     /**
      * Зарегистрировать просмотр и вернуть обновлённый EventFullDto
+     *
      * @param eventId - ид события
      * @return - EventFullDto с увеличенным количеством просмотров
      */
     protected EventFullDto registerViewAndGetEventFullDto(Long eventId) {
         return eventRepository.findById(eventId)
-                .map(event -> event.toBuilder().views(event.getViews()+1).build())
+                .map(event -> event.toBuilder().views(event.getViews() + 1).build())
                 .map(eventRepository::save)
                 .map(EventMapper::toEventFullDto)
                 .orElseThrow(() -> new NoSuchElementException("Event with id=" + eventId + " not found"));

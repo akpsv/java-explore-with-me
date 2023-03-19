@@ -57,7 +57,8 @@ public class Event {
     private Long confirmedRequests; //Количество одобренных заявок на участие в данном событии TODO:(Заполняется в процессе работы)
 
     @Column(name = "available_to_participants")
-    private Boolean availableToParicipants; //доступность для участия
+    @Builder.Default
+    private Boolean availableToParicipants = true; //доступность для участия
 
     @Column(name = "published_on")
     private LocalDateTime publishedOn;     //Дата и время публикации события (в формате "yyyy-MM-dd HH:mm:ss") TODO:(Заполняестя во время работы)

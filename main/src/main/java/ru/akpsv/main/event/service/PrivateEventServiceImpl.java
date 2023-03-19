@@ -224,26 +224,23 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         List<ParticipationRequestDto> confirmedRequests = new ArrayList<>();
         List<ParticipationRequestDto> rejectedRequests = new ArrayList<>();
 
-        //TODO: если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить
+        //если при подтверждении данной заявки, лимит заявок для события исчерпан, то все неподтверждённые заявки необходимо отклонить
         log.debug("Обработать заявки в соответствии с лимитом. Отклонение заявок которым не хватило разрешений.");
-        //TODO: Если статус заявок обновляется на CONFIRMED, то происходит обработка, иначе все заявки отклоняются
+        //Если статус заявок обновляется на CONFIRMED, то происходит обработка, иначе все заявки отклоняются
         if (updateRequestStatus.getStatus().equals(RequestStatus.CONFIRMED.name())) {
-            //TODO: если лимит подтверждённых заявок ещё не исчерпан, то заявка одобряется, иначе отклоняется
+            log.debug("если лимит подтверждённых заявок ещё не исчерпан, то заявка одобряется, иначе отклоняется");
             pendingRequests.stream()
                     .forEach(request -> {
                         if (event.getConfirmedRequests() < event.getParticipantLimit()) {
                             updateCountOfConfirmedRequests(event);
-
-                            Stream.of(request)
-                                    .map(changingRequest -> changingRequest.toBuilder().status(RequestStatus.CONFIRMED).build())
-                                    .map(requestRepository::save)
-                                    .map(RequestMapper::toParticipationRequestDto)
-                                    .forEach(confirmedRequests::add);
-                        } else
+                            confirmRequestAndAddToGroup(confirmedRequests, request);
+                        } else {
+                            setUnavailabilityForParticipation(event);
                             rejectRequests(request).ifPresent(rejectedRequests::add); //TODO: отклонить все оставшиеся заявки
+                        }
                     });
         } else if (updateRequestStatus.getStatus().equals(RequestStatus.REJECTED.name())) {
-            //TODO: отклонить все заявки
+            log.debug("отклонить все заявки");
             pendingRequests.stream()
                     .map(this::rejectRequests)
                     .map(Optional::get)
@@ -255,6 +252,20 @@ public class PrivateEventServiceImpl implements PrivateEventService {
                 .confirmedRequests(confirmedRequests)
                 .rejectedRequests(rejectedRequests)
                 .build();
+    }
+
+    private void setUnavailabilityForParticipation(Event event) {
+        if (event.getAvailableToParicipants()){
+            eventRepository.save(event.toBuilder().availableToParicipants(false).build());
+        }
+    }
+
+    private void confirmRequestAndAddToGroup(List<ParticipationRequestDto> confirmedRequests, Request request) {
+        Stream.of(request)
+                .map(changingRequest -> changingRequest.toBuilder().status(RequestStatus.CONFIRMED).build())
+                .map(requestRepository::save)
+                .map(RequestMapper::toParticipationRequestDto)
+                .forEach(confirmedRequests::add);
     }
 
     protected Optional<ParticipationRequestDto> rejectRequests(Request request) {
@@ -299,7 +310,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             List<Request> pendingRequests
     ) {
         log.debug("Авто согласование заявок не требующих подтвердждения");
-        //TODO: Согласовать все заявки и добавить в группу подтверждённых
+        //Согласовать все заявки и добавить в группу подтверждённых
         List<ParticipationRequestDto> requestWithChangedStatus = pendingRequests.stream()
                 .map(request -> request.toBuilder().status(RequestStatus.valueOf(updatingRequest.getStatus())).build())
                 .map(RequestMapper::toParticipationRequestDto)

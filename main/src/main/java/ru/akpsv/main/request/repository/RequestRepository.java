@@ -18,18 +18,5 @@ import java.util.List;
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long>, RequestRepositoryAdvanced {
     List<Request> getRequestsByRequesterId(Long userId);
-
     List<Request> getRequestsByEventId(Long eventId);
-
-//    default List<Request> getRequestsFromList(EntityManager em, Long[] requestIds, Long userId, Long eventId) {
-//        CriteriaBuilder cb = em.getCriteriaBuilder();
-//        CriteriaQuery<Request> cq = cb.createQuery(Request.class);
-//        Root<Request> fromRequest = cq.from(Request.class);
-//        Predicate requestsForEvent = cb.equal(fromRequest.get(Request_.EVENT_ID), eventId);
-//        Predicate requestsWithIdsFromList = fromRequest.get(Request_.ID).in(requestIds);
-//        Predicate onlyPendingRequests = cb.equal(fromRequest.get(Request_.STATUS), RequestStatus.PENDING);
-//        cq.select(fromRequest).where(requestsForEvent, requestsWithIdsFromList, onlyPendingRequests);
-//        TypedQuery<Request> query = em.createQuery(cq);
-//        return query.getResultList();
-//    }
 }
