@@ -6,8 +6,8 @@ import ru.akpsv.main.compilation.dto.CompilationDto;
 import ru.akpsv.main.compilation.dto.CompilationMapper;
 import ru.akpsv.main.compilation.dto.NewCompilationDto;
 import ru.akpsv.main.compilation.dto.UpdateCompilationRequest;
-import ru.akpsv.main.event.repository.EventRepository;
 import ru.akpsv.main.event.model.Event;
+import ru.akpsv.main.event.repository.EventRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -27,10 +27,10 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     public CompilationDto create(NewCompilationDto newCompilationDto) {
-        Compilation compilation = CompilationMapper.toCompilation(newCompilationDto);
-        Compilation savedCompilation = compilationRepository.save(compilation);
-        CompilationDto compilationDto = CompilationMapper.toCompilationDto(savedCompilation);
-        return compilationDto;
+        return Optional.ofNullable(CompilationMapper.toCompilation(newCompilationDto))
+                .map(compilationRepository::save)
+                .map(CompilationMapper::toCompilationDto)
+                .orElseThrow(() -> new NoSuchElementException("New compilation not saved"));
     }
 
     @Override
@@ -52,20 +52,16 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     public List<CompilationDto> getCompilations(Boolean pinned, Integer from, Integer size) {
-        List<CompilationDto> collect = compilationRepository.getCompilations(em, pinned, from, size).stream()
+        return compilationRepository.getCompilations(em, pinned, from, size).stream()
                 .map(CompilationMapper::toCompilationDto)
                 .collect(Collectors.toList());
-        return collect;
     }
 
     @Override
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest updatingRequest) {
         return compilationRepository.findById(compId)
-                .map(compilation -> {
-                    Compilation checkedCompilation = checkAndFillCompilationFields(updatingRequest, compilation);
-                    Compilation savedCompilation = compilationRepository.save(checkedCompilation);
-                    return savedCompilation;
-                })
+                .map(compilation -> checkAndFillCompilationFields(updatingRequest, compilation))
+                .map(compilationRepository::save)
                 .map(CompilationMapper::toCompilationDto)
                 .orElseThrow(() -> new NoSuchElementException("Compilation with id=" + compId + " was not found"));
     }
