@@ -19,12 +19,12 @@ public class CategoryController {
     @PostMapping("/admin/categories")
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto create(@Valid @RequestBody NewCategoryDto newCategory) {
-        return categoryService.create(newCategory).get();
+        return categoryService.create(newCategory);
     }
 
     @PatchMapping("/admin/categories/{catId}")
     public CategoryDto update(@Valid @RequestBody CategoryDto categoryDto, @PathVariable Long catId) {
-        return categoryService.updateCategoryById(catId, categoryDto).get();
+        return categoryService.updateCategoryById(catId, categoryDto);
     }
 
     @DeleteMapping("/admin/categories/{catId}")

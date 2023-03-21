@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CategoryService {
-    Optional<CategoryDto> create(NewCategoryDto newCategory);
+    CategoryDto create(NewCategoryDto newCategory);
 
     void deleteCategoryById(Long catId);
 
-    Optional<CategoryDto> updateCategoryById(Long catId, CategoryDto categoryDto);
+    CategoryDto updateCategoryById(Long catId, CategoryDto categoryDto);
 
     List<Category> get(Integer from, Integer size);
 

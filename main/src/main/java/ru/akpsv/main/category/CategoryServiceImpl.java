@@ -6,11 +6,14 @@ import ru.akpsv.main.category.dto.CategoryDto;
 import ru.akpsv.main.category.dto.CategoryMapper;
 import ru.akpsv.main.category.dto.NewCategoryDto;
 import ru.akpsv.main.category.model.Category;
+import ru.akpsv.main.error.ViolationOfRestrictionsException;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -20,20 +23,21 @@ public class CategoryServiceImpl implements CategoryService {
     EntityManager em;
 
     @Override
-    public Optional<CategoryDto> create(NewCategoryDto newCategory) {
-        Category category = CategoryMapper.toCategory(newCategory);
-        Category savedCategory = categoryRepository.save(category);
-        CategoryDto categoryDto = CategoryMapper.toCategoryDto(savedCategory);
-        return Optional.of(categoryDto);
+    public CategoryDto create(NewCategoryDto newCategory) {
+        return Optional.ofNullable(CategoryMapper.toCategory(newCategory))
+                .map(categoryRepository::save)
+                .map(CategoryMapper::toCategoryDto)
+                .orElseThrow(() -> new NoSuchElementException("New category not saved"));
     }
 
     @Override
-    public Optional<CategoryDto> updateCategoryById(Long catId, CategoryDto categoryDto) {
-        categoryDto = categoryDto.toBuilder().id(catId).build();
-        Category category = CategoryMapper.toCategory(categoryDto);
-        Category updatedCategory = categoryRepository.save(category);
-        CategoryDto updatedCategoryDto = CategoryMapper.toCategoryDto(updatedCategory);
-        return Optional.of(updatedCategoryDto);
+    public CategoryDto updateCategoryById(Long catId, CategoryDto categoryDto) {
+        return Stream.of(categoryDto.toBuilder().id(catId).build())
+                .map(CategoryMapper::toCategory)
+                .map(categoryRepository::save)
+                .map(CategoryMapper::toCategoryDto)
+                .findFirst()
+                .orElseThrow(() -> new ViolationOfRestrictionsException("Integrity constraint has been violated"));
     }
 
     @Override
@@ -43,7 +47,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category getCategoryById(Long catId) {
-        return categoryRepository.findById(catId).get();
+        return categoryRepository.findById(catId).orElseThrow(() -> new NoSuchElementException("Category with id=" + catId + " not exist"));
     }
 
     @Override

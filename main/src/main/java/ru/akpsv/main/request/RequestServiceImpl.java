@@ -51,7 +51,7 @@ public class RequestServiceImpl implements RequestService {
                     .status(RequestStatus.PENDING)
                     .build();
         }
-        //TODO: нельзя добавить повторный запрос (Ожидается код ошибки 409)
+        //невозможность добавить повторный запрос поддерживается схемой БД(Ожидается код ошибки 409)
         return Optional.ofNullable(request)
                 .map(requestRepository::save)
                 .map(RequestMapper::toParticipationRequestDto)
@@ -61,7 +61,9 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public List<ParticipationRequestDto> getRequestsOfCurrentUser(Long userId) {
         return requestRepository.getRequestsByRequesterId(userId).stream()
-                .filter(request -> !eventRepository.findById(request.getEventId()).get().getInitiatorId().equals(userId))
+                .filter(request -> !eventRepository.findById(request.getEventId())
+                        .orElseThrow(() -> new NoSuchElementException("Event with id=" + request.getEventId() + " not exist."))
+                        .getInitiatorId().equals(userId))
                 .map(RequestMapper::toParticipationRequestDto)
                 .collect(Collectors.toList());
     }
@@ -70,10 +72,8 @@ public class RequestServiceImpl implements RequestService {
     public ParticipationRequestDto cancelOwnRequest(Long userId, Long requestId) {
         return requestRepository.findById(requestId)
                 .filter(request -> request.getRequesterId().equals(userId))
-                .map(request -> {
-                    request = request.toBuilder().status(RequestStatus.CANCELED).build();
-                    return RequestMapper.toParticipationRequestDto(request);
-                })
+                .map(request -> request.toBuilder().status(RequestStatus.CANCELED).build())
+                .map(RequestMapper::toParticipationRequestDto)
                 .orElseThrow(() -> new NoSuchElementException("Request id=" + requestId + " is not exist"));
     }
 }
