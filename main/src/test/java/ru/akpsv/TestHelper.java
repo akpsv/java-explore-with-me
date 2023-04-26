@@ -17,6 +17,7 @@ import ru.akpsv.main.user.dto.NewUserRequest;
 import ru.akpsv.main.user.dto.UserDto;
 import ru.akpsv.main.user.dto.UserShortDto;
 import ru.akpsv.main.user.model.User;
+import ru.akpsv.statdto.StatDtoOut;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -178,9 +179,9 @@ public class TestHelper {
                 .build();
     }
 
-    public static EventShortDto createEventShortDto() {
+    public static EventShortDto createEventShortDto(Long id) {
         return EventShortDto.builder()
-                .id(1L)
+                .id(id)
                 .title("title")
                 .views(0L)
                 .initiator(createUserShortDto(1L, "user"))
@@ -200,6 +201,14 @@ public class TestHelper {
                 .status(status)
                 .eventId(1L)
                 .created(LocalDateTime.now())
+                .build();
+    }
+
+    public static StatDtoOut createStatDtoOut(Long eventId) {
+        return StatDtoOut.builder()
+                .app("main-mvc")
+                .uri("http://testserver/event/" + eventId)
+                .hits(7)
                 .build();
     }
 }

@@ -1,9 +1,12 @@
 package ru.akpsv.main.event.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import ru.akpsv.main.event.EventParams;
 import ru.akpsv.main.event.dto.EventFullDto;
 import ru.akpsv.main.event.dto.EventMapper;
@@ -13,32 +16,119 @@ import ru.akpsv.main.event.model.EventState;
 import ru.akpsv.main.event.model.Event_;
 import ru.akpsv.main.event.repository.CriteriaQueryPreparation;
 import ru.akpsv.main.event.repository.EventRepository;
-import ru.akpsv.statclient.RestClientService;
-import ru.akpsv.statdto.RequestDtoIn;
+import ru.akpsv.statclient.WebFluxClientService;
+import ru.akpsv.statdto.EndpointHit;
+import ru.akpsv.statdto.StatDtoOut;
 
 import javax.persistence.criteria.Predicate;
 import javax.servlet.http.HttpServletRequest;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PublicEventServiceImpl implements PublicEventService {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    WebFluxClientService webClient = new WebFluxClientService(WebClient.builder());
     private final EventRepository eventRepository;
-    @Value("${main-svc.url}")
-    private String serverUrl;
+//    @Value("${main-svc.url}")
+//    private String serverUrl;
 
     @Override
     public List<EventShortDto> getEventsByPublicParams(EventParams params, HttpServletRequest request) {
-        List<EventShortDto> eventShortDtos = getEventShortDtosByParams(params);
+        log.info("Вызван метод getEventsByPublicParams с параметрами params= {}, request={}", params, request);
+        log.debug("Зарегистрировть запрос {}", request);
         registerRequestInStatSvc(request);
-        return eventShortDtos;
+
+        log.debug("Получить отсортированый поток объектов EventShortDto");
+        Flux<EventShortDto> eventShortDtos = Flux.fromIterable(getEventShortDtosByParams(params));
+
+        log.debug("Запросить у сервера статистики колчество просмотров каждого события.");
+        Flux<StatDtoOut> statDtoOuts = getStatDtoOutsFromStatSvc(params, eventShortDtos, webClient);
+
+        log.debug("Добавить число просмотров в объекты EventShortDto и вернуть поток. {}");
+        Flux<EventShortDto> eventShortDtoFlux = addViewsToEventShortDtos(eventShortDtos, statDtoOuts);
+
+        return eventShortDtoFlux.toStream().collect(Collectors.toList());
+    }
+
+    protected Flux<EventShortDto> addViewsToEventShortDtos(Flux<EventShortDto> eventShortDtos, Flux<StatDtoOut> statDtoOuts) {
+        return eventShortDtos.flatMap(event ->
+                statDtoOuts.hasElements()
+                        .map(isAvailable -> {
+                            if (isAvailable) {
+                                statDtoOuts.map(stat -> {
+                                    if (getIdFromUri(stat.getUri()).equals(event.getId())) {
+                                        return event.toBuilder().views(stat.getHits()).build();
+                                    }
+                                    return event;
+                                });
+                            }
+                            return event;
+                        })
+        );
+    }
+
+    private Long getIdFromUri(String uri) {
+        URL url = null;
+        try {
+            url = new URL(uri);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        Path eventId = Path.of(url.getFile()).getFileName();
+        return Long.valueOf(eventId.toString());
+    }
+
+    protected Flux<StatDtoOut> getStatDtoOutsFromStatSvc(EventParams params, Flux<EventShortDto> groupOfEventShortDtos, WebFluxClientService webClient) {
+        EventParams dateTimeRange = prepareDateTimeRange(params);
+        Boolean uniqueValue = prepareUniqueValue(params);
+
+        return groupOfEventShortDtos
+                .flatMap(eventShortDto -> Mono.just(eventShortDto)
+                        .map(shortDto -> "/event/" + eventShortDto.getId())
+                        .subscribeOn(Schedulers.parallel()))
+                .collectList()
+                //Получить данные с сервера через веб клиент
+                .flatMapMany(groupUris -> webClient.getStats(dateTimeRange.getRangeStart().get(),
+                        dateTimeRange.getRangeEnd().get(), groupUris, uniqueValue));
+    }
+
+    private Boolean prepareUniqueValue(EventParams params) {
+        if (params.getOnlyAvailable().isPresent()) {
+            return params.getOnlyAvailable().get();
+        }
+        return false;
+    }
+
+    private EventParams prepareDateTimeRange(EventParams eventParams) {
+        EventParams datetimeRange = new EventParams();
+        eventParams.getRangeStart()
+                .ifPresentOrElse(start -> eventParams.getRangeEnd()
+                        .ifPresent(end -> {
+                            datetimeRange.setRangeStart(Optional.of(start));
+                            datetimeRange.setRangeEnd(Optional.of(end));
+                        }), () -> {
+                    datetimeRange.setRangeStart(Optional.of(LocalDateTime.now().format(formatter)));
+                    datetimeRange.setRangeEnd(Optional.of(LocalDateTime.MAX.format(formatter)));
+                });
+        return datetimeRange;
+    }
+
+    protected List<String> createGroupOfUris(List<EventShortDto> eventShortDtos) {
+        return eventShortDtos.stream()
+                .map(eventShortDto -> "/event/" + eventShortDto.getId())
+                .collect(Collectors.toList());
     }
 
     private List<EventShortDto> getEventShortDtosByParams(EventParams params) {
@@ -52,8 +142,8 @@ public class PublicEventServiceImpl implements PublicEventService {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(fromEvent.get(Event_.STATE), EventState.PUBLISHED));
             params.getText().ifPresent(text -> predicates.add(cb.or(
-                            cb.like(cb.lower(fromEvent.get(Event_.ANNOTATION)), ("%" + text + "%").toLowerCase()),
-                            cb.like(cb.lower(fromEvent.get(Event_.DESCRIPTION)), ("%" + text + "%").toLowerCase())
+                    cb.like(cb.lower(fromEvent.get(Event_.ANNOTATION)), ("%" + text + "%").toLowerCase()),
+                    cb.like(cb.lower(fromEvent.get(Event_.DESCRIPTION)), ("%" + text + "%").toLowerCase())
                     )
             ));
             params.getCategories().ifPresent(categoryIds -> predicates.add(fromEvent.get(Event_.CATEGORY_ID).in(categoryIds)));
@@ -83,8 +173,8 @@ public class PublicEventServiceImpl implements PublicEventService {
 
     @Override
     public EventFullDto registerViewAndGetEventById(Long eventId, HttpServletRequest request) {
-        EventFullDto eventFullDto = registerViewAndGetEventFullDto(eventId);
         registerRequestInStatSvc(request);
+        EventFullDto eventFullDto = registerViewAndGetEventFullDto(eventId);
         return eventFullDto;
     }
 
@@ -95,10 +185,29 @@ public class PublicEventServiceImpl implements PublicEventService {
      * @return - EventFullDto с увеличенным количеством просмотров
      */
     protected EventFullDto registerViewAndGetEventFullDto(Long eventId) {
+        EventShortDto eventShortDto = eventRepository.findById(eventId)
+                .map(EventMapper::toEventShortDto)
+                .orElseThrow(() -> new NoSuchElementException("Event with id=" + eventId + " not found"));
+
+        Flux<EventShortDto> eventShortDtoFlux = Flux.just(eventShortDto);
+
+        EventParams eventParams = EventParams.builder()
+                .onlyAvailable(Optional.of(false))
+                .rangeStart(Optional.of(LocalDateTime.MIN.format(formatter)))
+                .rangeEnd(Optional.of(LocalDateTime.MAX.format(formatter)))
+                .build();
+
+        Flux<StatDtoOut> statDtoOutsFromStatSvc = getStatDtoOutsFromStatSvc(eventParams, eventShortDtoFlux, webClient);
+
+        Long views = addViewsToEventShortDtos(eventShortDtoFlux, statDtoOutsFromStatSvc)
+                .toStream()
+                .collect(Collectors.toList())
+                .get(0)
+                .getViews();
+
         return eventRepository.findById(eventId)
-                .map(event -> event.toBuilder().views(event.getViews() + 1).build())
-                .map(eventRepository::save)
                 .map(EventMapper::toEventFullDto)
+                .map(eventFullDto -> eventFullDto.toBuilder().views(views).build())
                 .orElseThrow(() -> new NoSuchElementException("Event with id=" + eventId + " not found"));
     }
 
@@ -108,14 +217,12 @@ public class PublicEventServiceImpl implements PublicEventService {
      * @param request - данные запроса
      * @return - код http ответа
      */
-    private int registerRequestInStatSvc(HttpServletRequest request) {
-        RequestDtoIn requestDtoIn = RequestDtoIn.builder()
+    private Mono<Integer> registerRequestInStatSvc(HttpServletRequest request) {
+        EndpointHit endpointHit = EndpointHit.builder()
                 .app("main-svc")
                 .uri(request.getRequestURI())
                 .ip(request.getRemoteAddr())
                 .timestamp(LocalDateTime.now().format(formatter)).build();
-
-        RestClientService restClientService = new RestClientService(serverUrl, new RestTemplateBuilder());
-        return restClientService.post(requestDtoIn);
+        return webClient.saveHit(Mono.just(endpointHit));
     }
 }

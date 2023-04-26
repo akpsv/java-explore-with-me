@@ -33,3 +33,5 @@ build/
 .vscode/
 /docs/
 /testdb/
+/stat-svc-testdb/
+/testdb/

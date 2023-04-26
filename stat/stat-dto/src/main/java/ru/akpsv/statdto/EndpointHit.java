@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class RequestDtoIn {
+public class EndpointHit {
     //Идентификатор сервиса для которого записывается информация
     private String app;
     //URI для которого был осуществлен запрос

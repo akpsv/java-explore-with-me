@@ -74,7 +74,7 @@ class EventMapperTest {
         User user = TestHelper.createUser(1L, "user");
         Mockito.when(stubUserRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user));
 
-        EventShortDto expectedEventShortDto = TestHelper.createEventShortDto();
+        EventShortDto expectedEventShortDto = TestHelper.createEventShortDto(1L);
 
         //Действия
         EventShortDto actualEventShortDto = EventMapper.toEventShortDto(event);

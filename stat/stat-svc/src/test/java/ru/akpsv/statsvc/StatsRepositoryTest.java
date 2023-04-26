@@ -52,12 +52,11 @@ class StatsRepositoryTest {
         String[] arrayOfUri = {request1.getUri(), request3.getUri()};
 
         //Действия
-        Map<Request, Long> resultStatDtoOuts = statsRepository.getStatDtoByParameters(entityManager,
+        Map<Request, Long> resultStatDtoOuts = statsRepository.getStatDtoByParameters(
                         LocalDateTime.now().minusHours(1L),
                         LocalDateTime.now().plusHours(1L),
                         arrayOfUri,
-                        uniqueIp)
-                .get();
+                        uniqueIp);
 
         //Проверка
         org.hamcrest.MatcherAssert.assertThat(resultStatDtoOuts.entrySet().iterator().next().getValue(), equalTo(expectedQuantityOfHits));

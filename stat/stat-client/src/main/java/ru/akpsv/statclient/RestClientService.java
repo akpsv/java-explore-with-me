@@ -1,6 +1,7 @@
 package ru.akpsv.statclient;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
-import ru.akpsv.statdto.RequestDtoIn;
+import ru.akpsv.statdto.EndpointHit;
 import ru.akpsv.statdto.StatDtoOut;
 
 import java.util.List;
@@ -23,7 +24,6 @@ public class RestClientService {
     private final RestTemplate restTemplate;
     private final String serverUrl;
 
-    //    @Autowired
     public RestClientService(String serverUrl, RestTemplateBuilder builder) {
         this.serverUrl = serverUrl;
         restTemplate = builder
@@ -31,15 +31,15 @@ public class RestClientService {
                 .build();
     }
 
-    public int post(RequestDtoIn requestDtoIn) {
-        log.info("Вызов метода post() с параметром типа RequestDtoIn: {}", requestDtoIn);
+    public int post(EndpointHit endpointHit) {
+        log.info("Вызов метода post() с параметром типа RequestDtoIn: {}", endpointHit);
         log.debug("Создать объект HttpHeaders");
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
 
         log.debug("Создание объекта типа HttpEntity<RequestDtoIn>");
-        HttpEntity<RequestDtoIn> requestDtoInHttpEntity = new HttpEntity<>(requestDtoIn, headers);
+        HttpEntity<EndpointHit> requestDtoInHttpEntity = new HttpEntity<>(endpointHit, headers);
         log.debug("Отправить запрос. RestTemplate.getUriTemplateHandler: {} ", restTemplate.getUriTemplateHandler().expand("/"));
         ResponseEntity<Object> response = null;
         try {

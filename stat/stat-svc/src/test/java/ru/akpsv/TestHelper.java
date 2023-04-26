@@ -1,6 +1,6 @@
 package ru.akpsv;
 
-import ru.akpsv.statdto.RequestDtoIn;
+import ru.akpsv.statdto.EndpointHit;
 import ru.akpsv.statdto.StatDtoOut;
 import ru.akpsv.statsvc.model.Request;
 
@@ -17,8 +17,8 @@ public class TestHelper {
                 .build();
     }
 
-    public static RequestDtoIn createRequestDtoIn() {
-        return RequestDtoIn.builder()
+    public static EndpointHit createRequestDtoIn() {
+        return EndpointHit.builder()
                 .app("TestApp")
                 .uri("http://test.server.ru/endpoint")
                 .ip("192.168.1.1")
