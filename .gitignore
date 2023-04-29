@@ -37,3 +37,4 @@ build/
 
 /subscribe/
 checkstyle.xml
+suppressions.xml
