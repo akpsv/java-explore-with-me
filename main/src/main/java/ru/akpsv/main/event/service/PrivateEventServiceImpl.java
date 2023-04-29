@@ -210,6 +210,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
     /**
      * Проверка принадлежности события запрашивающему пользователю
+     *
      * @param userId
      * @param eventId
      * @return
@@ -255,7 +256,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     }
 
     private void setUnavailabilityForParticipation(Event event) {
-        if (event.getAvailableToParicipants()){
+        if (event.getAvailableToParicipants()) {
             eventRepository.save(event.toBuilder().availableToParicipants(false).build());
         }
     }
@@ -292,7 +293,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
      * @return
      */
     protected List<Request> getAndCheckPendingRequests(EventRequestStatusUpdateRequest updateRequestStatus,
-                                                     Long userId, Long eventId) {
+                                                       Long userId, Long eventId) {
         log.debug("Получение заявок из репозитория");
         return requestRepository.getRequestsFromList(updateRequestStatus.getRequestIds(), userId, eventId)
                 .stream()

@@ -208,7 +208,7 @@ public class TestHelper {
         return StatDtoOut.builder()
                 .app("main-mvc")
                 .uri("http://testserver/event/" + eventId)
-                .hits(7)
+                .hits(7L)
                 .build();
     }
 }

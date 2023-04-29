@@ -5,7 +5,6 @@ import ru.akpsv.main.category.dto.NewCategoryDto;
 import ru.akpsv.main.category.model.Category;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface CategoryService {
     CategoryDto create(NewCategoryDto newCategory);

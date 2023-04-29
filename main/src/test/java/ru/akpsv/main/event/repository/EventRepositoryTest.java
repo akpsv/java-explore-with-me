@@ -1,6 +1,5 @@
 package ru.akpsv.main.event.repository;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +24,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
 
 @DataJpaTest
 class EventRepositoryTest {
@@ -50,7 +46,7 @@ class EventRepositoryTest {
         categoryRepository.flush();
     }
 
-        @Test
+    @Test
     void save_NewEventDto_ReturnsCorrectEvent() {
         //Подготоска
         User user = TestHelper.createUser(0L, "user@email.ru");
@@ -74,8 +70,8 @@ class EventRepositoryTest {
 
         Category category = TestHelper.createCategory(0L);
         Long categoryId = categoryRepository.save(category).getId();
-        Event event1 = TestHelper.createEvent(0L,userId, categoryId);
-        Event event2 = TestHelper.createEvent(0L,userId, categoryId);
+        Event event1 = TestHelper.createEvent(0L, userId, categoryId);
+        Event event2 = TestHelper.createEvent(0L, userId, categoryId);
         eventRepository.save(event1);
         eventRepository.save(event2);
 
@@ -108,8 +104,8 @@ class EventRepositoryTest {
         Category savedCategory1 = categoryRepository.save(category1);
         Category savedCategory2 = categoryRepository.save(category2);
 
-        Event event1 = TestHelper.createEvent(0L,savedUser2.getId(), savedCategory2.getId());
-        Event event2 = TestHelper.createEvent(0L,savedUser1.getId(), savedCategory2.getId());
+        Event event1 = TestHelper.createEvent(0L, savedUser2.getId(), savedCategory2.getId());
+        Event event2 = TestHelper.createEvent(0L, savedUser1.getId(), savedCategory2.getId());
         eventRepository.save(event1);
         eventRepository.save(event2);
 
@@ -121,10 +117,11 @@ class EventRepositoryTest {
 
         int expectedSizeOfEventGroup = 1;
         //Действия
-        List<Event> actualEventsByAdminParams = eventRepository.getEvents(searchParams, prepareAdminRequest() );
+        List<Event> actualEventsByAdminParams = eventRepository.getEvents(searchParams, prepareAdminRequest());
         //Проверка
         assertThat(actualEventsByAdminParams.size(), equalTo(expectedSizeOfEventGroup));
     }
+
     private CriteriaQueryPreparation<Event> prepareAdminRequest() {
         return (params, cb, cq, fromEvent) -> {
 //            EventParams params = eventParams.orElseThrow(() -> new NoSuchElementException("Parameters not passed."));
@@ -161,12 +158,12 @@ class EventRepositoryTest {
         Category savedCategory1 = categoryRepository.save(category1);
         Category savedCategory2 = categoryRepository.save(category2);
 
-        Event event1 = TestHelper.createEvent(0L,savedUser.getId(), savedCategory1.getId());
+        Event event1 = TestHelper.createEvent(0L, savedUser.getId(), savedCategory1.getId());
         Event savedEvent1 = eventRepository.save(event1);
-        Event event2 = TestHelper.createEvent(0L,savedUser.getId(), savedCategory2.getId());
+        Event event2 = TestHelper.createEvent(0L, savedUser.getId(), savedCategory2.getId());
         event2.setState(EventState.PUBLISHED);
         Event savedEvent2 = eventRepository.save(event2);
-        Event event3 = TestHelper.createEvent(0L,savedUser.getId(), savedCategory2.getId());
+        Event event3 = TestHelper.createEvent(0L, savedUser.getId(), savedCategory2.getId());
         event3.setState(EventState.PUBLISHED);
         event3.setEventDate(LocalDateTime.now().plusHours(2));
         Event savedEvent3 = eventRepository.save(event3);
@@ -184,14 +181,15 @@ class EventRepositoryTest {
         //Проверка
         assertThat(actualEventsByAdminParams.size(), equalTo(expectedSizeOfEventGroup));
     }
+
     private CriteriaQueryPreparation<Event> preparePublicRequest() {
         return (params, cb, cq, fromEvent) -> {
 //            EventParams params = eventParams.orElseThrow(() -> new NoSuchElementException("Parameters not passed."));
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(fromEvent.get(Event_.STATE), EventState.PUBLISHED));
             params.getText().ifPresent(text -> predicates.add(cb.or(
-                            cb.like(cb.lower(fromEvent.get(Event_.ANNOTATION)), ("%" + text + "%").toLowerCase()),
-                            cb.like(cb.lower(fromEvent.get(Event_.DESCRIPTION)), ("%" + text + "%").toLowerCase())
+                    cb.like(cb.lower(fromEvent.get(Event_.ANNOTATION)), ("%" + text + "%").toLowerCase()),
+                    cb.like(cb.lower(fromEvent.get(Event_.DESCRIPTION)), ("%" + text + "%").toLowerCase())
                     )
             ));
             params.getCategories().ifPresent(categoryIds -> predicates.add(fromEvent.get(Event_.CATEGORY_ID).in(categoryIds)));

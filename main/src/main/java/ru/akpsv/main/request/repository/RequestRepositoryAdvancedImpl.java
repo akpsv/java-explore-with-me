@@ -13,9 +13,10 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.List;
 
-public class RequestRepositoryAdvancedImpl implements RequestRepositoryAdvanced{
+public class RequestRepositoryAdvancedImpl implements RequestRepositoryAdvanced {
     @PersistenceContext
     private EntityManager em;
+
     public List<Request> getRequestsFromList(List<Long> requestIds, Long userId, Long eventId) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Request> cq = cb.createQuery(Request.class);

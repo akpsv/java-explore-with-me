@@ -19,7 +19,7 @@ import java.util.Optional;
 public class EventMapper {
     private static CategoryRepository categoryRepository;
     private static UserRepository userRepository;
-    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
     private EventMapper(CategoryRepository categoryRepository, UserRepository userRepository) {

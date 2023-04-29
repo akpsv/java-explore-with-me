@@ -38,9 +38,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PublicEventServiceImpl implements PublicEventService {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-    WebFluxClientService webClient = new WebFluxClientService(WebClient.builder());
     private final EventRepository eventRepository;
+    WebFluxClientService webClient = new WebFluxClientService(WebClient.builder());
 //    @Value("${main-svc.url}")
 //    private String serverUrl;
 
@@ -58,39 +57,52 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         log.debug("Добавить число просмотров в объекты EventShortDto и вернуть поток. {}");
         Flux<EventShortDto> eventShortDtoFlux = addViewsToEventShortDtos(eventShortDtos, statDtoOuts);
+//        Stream<EventShortDto> eventShortDtoFlux = addViewsToEventShortDtos(eventShortDtos, statDtoOuts);
 
-        return eventShortDtoFlux.toStream().collect(Collectors.toList());
+//        List<EventShortDto> resultEventShortDtos = eventShortDtoFlux.toStream().collect(Collectors.toList());
+        List<EventShortDto> resultEventShortDtos = eventShortDtoFlux.toStream().collect(Collectors.toList());
+        return resultEventShortDtos;
     }
 
     protected Flux<EventShortDto> addViewsToEventShortDtos(Flux<EventShortDto> eventShortDtos, Flux<StatDtoOut> statDtoOuts) {
-        return eventShortDtos.flatMap(event ->
-                statDtoOuts.hasElements()
-                        .map(isAvailable -> {
+////////////////////////////////////////////////////////////////////////////////////////////
+
+        Flux<EventShortDto> eventShortDtoFlux = statDtoOuts.hasElements()
+                .map(isAvailable -> {
+                            Flux<EventShortDto> eventShortDtoFlux1;
                             if (isAvailable) {
-                                statDtoOuts.map(stat -> {
-                                    if (getIdFromUri(stat.getUri()).equals(event.getId())) {
-                                        return event.toBuilder().views(stat.getHits()).build();
-                                    }
-                                    return event;
-                                });
+                                eventShortDtoFlux1 = eventShortDtos.flatMap(eventSD ->
+                                        statDtoOuts
+                                                .filter(stat -> getIdFromUri(stat.getUri()).equals(eventSD.getId()))
+                                                .map(stat -> eventSD.toBuilder().views(stat.getHits()).build())
+                                );
+                                return eventShortDtoFlux1;
+                            } else {
+                                return eventShortDtos;
                             }
-                            return event;
-                        })
-        );
+                        }
+                )
+                .block();
+
+        return eventShortDtoFlux;
     }
 
     private Long getIdFromUri(String uri) {
-        URL url = null;
-        try {
-            url = new URL(uri);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+        if (uri != null) {
+            try {
+                URL url = new URL(uri);
+                Path eventId = Path.of(url.getFile()).getFileName();
+                return Long.valueOf(eventId.toString());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
         }
-        Path eventId = Path.of(url.getFile()).getFileName();
-        return Long.valueOf(eventId.toString());
+        return -1L;
     }
 
-    protected Flux<StatDtoOut> getStatDtoOutsFromStatSvc(EventParams params, Flux<EventShortDto> groupOfEventShortDtos, WebFluxClientService webClient) {
+    protected Flux<StatDtoOut> getStatDtoOutsFromStatSvc(EventParams params,
+                                                         Flux<EventShortDto> groupOfEventShortDtos,
+                                                         WebFluxClientService webClient) {
         EventParams dateTimeRange = prepareDateTimeRange(params);
         Boolean uniqueValue = prepareUniqueValue(params);
 
@@ -99,7 +111,6 @@ public class PublicEventServiceImpl implements PublicEventService {
                         .map(shortDto -> "/event/" + eventShortDto.getId())
                         .subscribeOn(Schedulers.parallel()))
                 .collectList()
-                //Получить данные с сервера через веб клиент
                 .flatMapMany(groupUris -> webClient.getStats(dateTimeRange.getRangeStart().get(),
                         dateTimeRange.getRangeEnd().get(), groupUris, uniqueValue));
     }
@@ -199,16 +210,24 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         Flux<StatDtoOut> statDtoOutsFromStatSvc = getStatDtoOutsFromStatSvc(eventParams, eventShortDtoFlux, webClient);
 
-        Long views = addViewsToEventShortDtos(eventShortDtoFlux, statDtoOutsFromStatSvc)
+        List<EventShortDto> groupOfEventWithView = addViewsToEventShortDtos(eventShortDtoFlux, statDtoOutsFromStatSvc)
                 .toStream()
-                .collect(Collectors.toList())
-                .get(0)
-                .getViews();
+                .collect(Collectors.toList());
+
+        Long views = getViews(groupOfEventWithView);
 
         return eventRepository.findById(eventId)
                 .map(EventMapper::toEventFullDto)
                 .map(eventFullDto -> eventFullDto.toBuilder().views(views).build())
                 .orElseThrow(() -> new NoSuchElementException("Event with id=" + eventId + " not found"));
+    }
+
+    private Long getViews(List<EventShortDto> groupOfEventWithView) {
+        Long views = 0L;
+        if (groupOfEventWithView.size() > 0) {
+            views = groupOfEventWithView.get(0).getViews();
+        }
+        return views;
     }
 
     /**

@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class StatsRepositoryAdvancedImpl implements StatsRepositoryAdvanced {
     @PersistenceContext
@@ -31,7 +30,7 @@ public class StatsRepositoryAdvancedImpl implements StatsRepositoryAdvanced {
      */
     @Override
     public Map<Request, Long> getStatDtoByParameters(LocalDateTime startDateTime, LocalDateTime endDateTime,
-                                                               String[] uris, boolean unique) {
+                                                     String[] uris, boolean unique) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
         Root<Request> fromRequests = cq.from(Request.class);

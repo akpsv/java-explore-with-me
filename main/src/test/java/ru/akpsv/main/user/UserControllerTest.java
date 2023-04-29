@@ -19,7 +19,6 @@ import ru.akpsv.main.user.dto.UserDto;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.Optional;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -28,11 +27,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
+    private final ObjectMapper mapper = new ObjectMapper();
     @Mock
     private UserService stubUserService;
     @InjectMocks
     private UserController userController;
-    private final ObjectMapper mapper = new ObjectMapper();
     private MockMvc mvc;
 
     @BeforeEach
@@ -54,10 +53,10 @@ class UserControllerTest {
         //Действия
         //Проверка
         mvc.perform(post("/admin/users")
-                        .content(mapper.writeValueAsString(newUserRequest))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.ALL))
+                .content(mapper.writeValueAsString(newUserRequest))
+                .characterEncoding(StandardCharsets.UTF_8)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.ALL))
                 .andExpect(status().isCreated());
     }
 
@@ -71,10 +70,10 @@ class UserControllerTest {
         //Действия
         //Проверка
         mvc.perform(post("/admin/users")
-                        .content(mapper.writeValueAsString(newUserRequest))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                .content(mapper.writeValueAsString(newUserRequest))
+                .characterEncoding(StandardCharsets.UTF_8)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(409));
     }
 
@@ -88,10 +87,10 @@ class UserControllerTest {
         //Действия
         //Проверка
         mvc.perform(post("/admin/users")
-                        .content(mapper.writeValueAsString(newUserRequest))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                .content(mapper.writeValueAsString(newUserRequest))
+                .characterEncoding(StandardCharsets.UTF_8)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(409));
     }
 
@@ -111,9 +110,9 @@ class UserControllerTest {
         Mockito.when(stubUserService.getUsersByIds(Mockito.any(), Mockito.anyInt(), Mockito.anyInt())).thenReturn(Collections.emptyList());
         //Действия и проверка
         mvc.perform(get("/admin/users")
-                        .param("ids", "1")
-                        .param("from", "0")
-                        .param("size", "10"))
+                .param("ids", "1")
+                .param("from", "0")
+                .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()", is(0)));
     }

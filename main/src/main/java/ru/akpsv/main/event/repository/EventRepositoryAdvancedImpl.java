@@ -2,7 +2,6 @@ package ru.akpsv.main.event.repository;
 
 import ru.akpsv.main.event.EventParams;
 import ru.akpsv.main.event.model.Event;
-import ru.akpsv.main.event.model.EventState;
 import ru.akpsv.main.event.model.Event_;
 
 import javax.persistence.EntityManager;
@@ -12,13 +11,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class EventRepositoryAdvancedImpl implements EventRepositoryAdvanced {
     @PersistenceContext
