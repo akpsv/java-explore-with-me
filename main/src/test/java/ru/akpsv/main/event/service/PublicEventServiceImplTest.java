@@ -105,7 +105,7 @@ class PublicEventServiceImplTest {
 
         Event event1 = TestHelper.createEvent(1L, 1L, 1L);
         EventRepository stubEventRepository = Mockito.mock(EventRepository.class);
-        PublicEventServiceImpl publicEventService = new PublicEventServiceImpl(stubEventRepository);
+        PublicEventServiceImpl publicEventService = new PublicEventServiceImpl(stubEventRepository, "");
 
         //Действия
         Flux<StatDtoOut> statDtoOutFlux = publicEventService
@@ -130,7 +130,7 @@ class PublicEventServiceImplTest {
         Flux<StatDtoOut> statDtoOutFlux = Flux.just(statDtoOut1);
 
         EventRepository stubEventRepository = Mockito.mock(EventRepository.class);
-        PublicEventServiceImpl publicEventService = new PublicEventServiceImpl(stubEventRepository);
+        PublicEventServiceImpl publicEventService = new PublicEventServiceImpl(stubEventRepository, "");
 
         //Действия
         Flux<EventShortDto> resultEventShortDtoFlux = publicEventService.addViewsToEventShortDtos(eventShortDtoFlux, statDtoOutFlux);

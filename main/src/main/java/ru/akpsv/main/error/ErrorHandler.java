@@ -14,6 +14,7 @@ import ru.akpsv.main.event.controller.PublicEventController;
 import ru.akpsv.main.request.RequestController;
 import ru.akpsv.main.user.UserController;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
@@ -29,6 +30,18 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleIncorrectRequest(MethodArgumentNotValidException exception) {
+        return ApiError.builder()
+                .status(HttpStatus.FORBIDDEN.toString())
+                .reason(exception.getMessage())
+                .message(exception.getMessage())
+                .timestamp(LocalDateTime.now().toString())
+                .build();
+    }
+
+    //Запрос составлен некорректно (400)
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleBadRequest(UnsupportedEncodingException exception) {
         return ApiError.builder()
                 .status(HttpStatus.FORBIDDEN.toString())
                 .reason(exception.getMessage())

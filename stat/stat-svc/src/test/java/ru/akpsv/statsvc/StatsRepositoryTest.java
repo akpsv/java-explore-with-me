@@ -12,7 +12,9 @@ import ru.akpsv.statsvc.model.Request;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -49,14 +51,14 @@ class StatsRepositoryTest {
         statsRepository.save(request1);
         statsRepository.save(request2);
         statsRepository.save(request3);
-        String[] arrayOfUri = {request1.getUri(), request3.getUri()};
+        List<String> arrayOfUri = List.of(request1.getUri(), request3.getUri());
 
         //Действия
         Map<Request, Long> resultStatDtoOuts = statsRepository.getStatDtoByParameters(
-                        LocalDateTime.now().minusHours(1L),
-                        LocalDateTime.now().plusHours(1L),
-                        arrayOfUri,
-                        uniqueIp);
+                LocalDateTime.now().minusHours(1L),
+                LocalDateTime.now().plusHours(1L),
+                Optional.of(arrayOfUri),
+                uniqueIp);
 
         //Проверка
         org.hamcrest.MatcherAssert.assertThat(resultStatDtoOuts.entrySet().iterator().next().getValue(), equalTo(expectedQuantityOfHits));

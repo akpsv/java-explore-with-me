@@ -1,21 +1,22 @@
 package ru.akpsv.statclient;
 
-import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.akpsv.statdto.EndpointHit;
 import ru.akpsv.statdto.StatDtoOut;
 
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.List;
 
-@Service
 public class WebFluxClientService {
-    private final WebClient webClient;
+    private WebClient webClient;
 
-    public WebFluxClientService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder
-                .baseUrl("http://localhost:9090")
+    public WebFluxClientService(String serverUrl) {
+        this.webClient = WebClient.builder()
+                .baseUrl(serverUrl)
                 .build();
     }
 
@@ -27,8 +28,9 @@ public class WebFluxClientService {
                 .exchangeToMono(clientResponse -> Mono.just(clientResponse.rawStatusCode()));
     }
 
-    public Flux<StatDtoOut> getStats(String startTimestamp, String endTimestamp, List<String> uris, Boolean uniqueValue) {
-        return webClient
+    public List<StatDtoOut> getStats(String startTimestamp, String endTimestamp, List<String> uris, Boolean uniqueValue) {
+        List<StatDtoOut> statDtoOutList = new ArrayList<>();
+        webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/stats")
@@ -37,6 +39,13 @@ public class WebFluxClientService {
                         .queryParam("uris", uris)
                         .queryParam("unique", uniqueValue)
                         .build())
-                .exchangeToFlux(clientResponse -> clientResponse.bodyToFlux(StatDtoOut.class));
+                .retrieve()
+                .onStatus(HttpStatus::is4xxClientError,
+                        clientResponse -> Mono.just(new UnsupportedEncodingException("Строка представляющая время не может быть декодирована")))
+                .bodyToMono(ResponseEntity.class)
+                .map(responseEntity -> (ResponseEntity<List<StatDtoOut>>) responseEntity)
+                .subscribe(responseEntity -> statDtoOutList.addAll(responseEntity.getBody()));
+
+        return statDtoOutList;
     }
 }

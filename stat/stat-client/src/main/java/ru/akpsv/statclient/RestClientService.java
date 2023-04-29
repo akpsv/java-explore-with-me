@@ -19,7 +19,6 @@ import java.util.Map;
 @Slf4j
 @Service
 public class RestClientService {
-    //    private static final Object API_PREFIX = "/stats";
     private final RestTemplate restTemplate;
     private final String serverUrl;
 

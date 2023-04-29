@@ -1,6 +1,7 @@
 spring:
   profiles:
-    active: ${activatedProperties}
+    active: '@activatedProperties@'
+
 ---
 spring:
   config:
@@ -32,6 +33,7 @@ logging:
       springframework:
         core:
           env: debug
+
 server:
   port: 9090
 
@@ -51,10 +53,15 @@ spring:
     init:
       mode: always
   datasource:
-    url: jdbc:h2:file:./stat-svc-testdb/testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: sa
+    url: jdbc:postgresql://localhost:5432/ewm_statdb
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+# datasource:
+#   url: jdbc:h2:file:./stat-svc-testdb/testdb
+#   driver-class-name: org.h2.Driver
+#   username: sa
+#   password: sa
 
 logging:
   level:

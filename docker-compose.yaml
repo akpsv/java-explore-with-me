@@ -2,32 +2,28 @@ version: '3.1'
 services:
   stats-server:
     build: ./stat/stat-svc
-    container_name: stats-server
     ports:
       - "9090:9090"
     depends_on:
       - stats-db
     environment:
-      - DB_HOST=stats-db
-      - DB_PORT=5432
-      - DB_NAME=stats
-
+      DB_HOST: stats-db
+      DB_PORT: 5432
+      DB_NAME: stats
 
   stats-db:
     image: postgres:14-alpine
-    container_name: stats-db
     volumes:
-      - /var/lib/postgresql/data/
+      - /var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - "5432:5432"
     environment:
-      - POSTGRES_DB=stats
-      - POSTGRES_USER=sa
-      - POSTGRES_PASSWORD=sa
+      POSTGRES_DB: stats
+      POSTGRES_USER: sa
+      POSTGRES_PASSWORD: sa
 
   ewm-service:
     build: ./main
-    container_name: ewm-service
     ports:
       - "8080:8080"
     depends_on:
@@ -38,15 +34,13 @@ services:
       - DB_NAME=ewmdb
       - STATS_SERVER_URL=http://stats-server:9090
 
-
   ewm-db:
     image: postgres:14-alpine
-    container_name: ewm-db
     volumes:
-      - /var/lib/postgresql/data/
+      - /var/lib/postgresql/data
     ports:
-        - 55432:5432
+      - "55432:5432"
     environment:
-        - POSTGRES_DB=ewmdb
-        - POSTGRES_USER=sa
-        - POSTGRES_PASSWORD=sa
+      POSTGRES_DB: ewmdb
+      POSTGRES_USER: sa
+      POSTGRES_PASSWORD: sa

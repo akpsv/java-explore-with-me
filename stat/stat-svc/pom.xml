@@ -21,18 +21,18 @@
     </properties>
     <profiles>
         <profile>
-            <id>statSvcDev</id>
+            <id>statSvcRev</id>
             <properties>
-                <activatedProperties>dev</activatedProperties>
+                <activatedProperties>rev</activatedProperties>
             </properties>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
         </profile>
         <profile>
-            <id>statSvcRev</id>
+            <id>statSvcDev</id>
             <properties>
-                <activatedProperties>rev</activatedProperties>
+                <activatedProperties>dev</activatedProperties>
             </properties>
         </profile>
     </profiles>
@@ -116,6 +116,18 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <delimiters>
+                        <delimiter>@</delimiter>
+                    </delimiters>
+                    <useDefaultDelimiters>false</useDefaultDelimiters>
+                </configuration>
+            </plugin>
+
+
         </plugins>
         <resources>
             <resource>

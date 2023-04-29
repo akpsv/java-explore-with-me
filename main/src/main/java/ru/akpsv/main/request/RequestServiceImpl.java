@@ -36,7 +36,7 @@ public class RequestServiceImpl implements RequestService {
                 .filter(event -> event.getState().equals(EventState.PUBLISHED))
                 .orElseThrow(() -> new ViolationOfRestrictionsException("Integrity constraint has been violated"));
 
-        Request request = null;
+        Request request = Request.builder().build();
         if (!checkedEvent.getRequestModeration()) {
             request = request.toBuilder().status(RequestStatus.CONFIRMED).build();
             checkedEvent = checkedEvent.toBuilder().confirmedRequests(checkedEvent.getConfirmedRequests() + 1).build();

@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 //@RequiredArgsConstructor
@@ -26,7 +27,10 @@ public class StatsServiceImpl implements StatsService {
     }
 
     @Override
-    public List<StatDtoOut> getStatDtoByParameters(LocalDateTime startDateTime, LocalDateTime endDateTime, String[] uris, boolean unique) {
+    public List<StatDtoOut> getStatDtoByParameters(LocalDateTime startDateTime,
+                                                   LocalDateTime endDateTime,
+                                                   Optional<List<String>> uris,
+                                                   boolean unique) {
         Map<Request, Long> requestsByParameters = statsRepository.getStatDtoByParameters(startDateTime, endDateTime, uris, unique);
         List<StatDtoOut> statDtoOuts = requestsByParameters.entrySet().stream()
                 .map(requestLongEntry -> StatDtoOut.builder()

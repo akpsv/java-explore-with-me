@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class StatsRepositoryAdvancedImpl implements StatsRepositoryAdvanced {
     @PersistenceContext
@@ -30,14 +31,18 @@ public class StatsRepositoryAdvancedImpl implements StatsRepositoryAdvanced {
      */
     @Override
     public Map<Request, Long> getStatDtoByParameters(LocalDateTime startDateTime, LocalDateTime endDateTime,
-                                                     String[] uris, boolean unique) {
+                                                     Optional<List<String>> uris, boolean unique) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
         Root<Request> fromRequests = cq.from(Request.class);
         Predicate rangeBetweenTimestamps = cb.between(fromRequests.get(Request_.TIMESTAMP), startDateTime, endDateTime);
-        Predicate equalsArrayOfUri = fromRequests.get(Request_.URI).in(uris);
-        cq.where(rangeBetweenTimestamps, equalsArrayOfUri);
-        cq.groupBy(fromRequests.get(Request_.URI));
+        uris.ifPresentOrElse(groupOfUris -> {
+                    Predicate equalsArrayOfUri = fromRequests.get(Request_.URI).in(groupOfUris);
+                    cq.where(rangeBetweenTimestamps, equalsArrayOfUri);
+                },
+                () -> cq.where(rangeBetweenTimestamps)
+        );
+        cq.groupBy(fromRequests.get(Request_.URI), fromRequests.get(Request_.APP));
 
         if (unique) {
             //Подсчитать уникальные ip в группе одинаковых uri

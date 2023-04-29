@@ -1,9 +1,9 @@
 package ru.akpsv.main.event.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -31,23 +31,28 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class PublicEventServiceImpl implements PublicEventService {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final EventRepository eventRepository;
-    WebFluxClientService webClient = new WebFluxClientService(WebClient.builder());
-//    @Value("${main-svc.url}")
-//    private String serverUrl;
+
+    private final WebFluxClientService webClient;
+
+    @Autowired
+    public PublicEventServiceImpl(EventRepository eventRepository, @Value("${main-svc.url}") String serverUrl) {
+        this.eventRepository = eventRepository;
+        this.webClient = new WebFluxClientService(serverUrl);
+    }
 
     @Override
     public List<EventShortDto> getEventsByPublicParams(EventParams params, HttpServletRequest request) {
         log.info("Вызван метод getEventsByPublicParams с параметрами params= {}, request={}", params, request);
         log.debug("Зарегистрировть запрос {}", request);
-        registerRequestInStatSvc(request);
+        registerRequestInStatSvc(request).subscribe();
 
         log.debug("Получить отсортированый поток объектов EventShortDto");
         Flux<EventShortDto> eventShortDtos = Flux.fromIterable(getEventShortDtosByParams(params));
@@ -57,16 +62,11 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         log.debug("Добавить число просмотров в объекты EventShortDto и вернуть поток. {}");
         Flux<EventShortDto> eventShortDtoFlux = addViewsToEventShortDtos(eventShortDtos, statDtoOuts);
-//        Stream<EventShortDto> eventShortDtoFlux = addViewsToEventShortDtos(eventShortDtos, statDtoOuts);
-
-//        List<EventShortDto> resultEventShortDtos = eventShortDtoFlux.toStream().collect(Collectors.toList());
         List<EventShortDto> resultEventShortDtos = eventShortDtoFlux.toStream().collect(Collectors.toList());
         return resultEventShortDtos;
     }
 
     protected Flux<EventShortDto> addViewsToEventShortDtos(Flux<EventShortDto> eventShortDtos, Flux<StatDtoOut> statDtoOuts) {
-////////////////////////////////////////////////////////////////////////////////////////////
-
         Flux<EventShortDto> eventShortDtoFlux = statDtoOuts.hasElements()
                 .map(isAvailable -> {
                             Flux<EventShortDto> eventShortDtoFlux1;
@@ -82,7 +82,7 @@ public class PublicEventServiceImpl implements PublicEventService {
                             }
                         }
                 )
-                .block();
+                .flatMapMany(Function.identity());
 
         return eventShortDtoFlux;
     }
@@ -105,14 +105,16 @@ public class PublicEventServiceImpl implements PublicEventService {
                                                          WebFluxClientService webClient) {
         EventParams dateTimeRange = prepareDateTimeRange(params);
         Boolean uniqueValue = prepareUniqueValue(params);
-
-        return groupOfEventShortDtos
+        List<StatDtoOut> statDtoOuts = new ArrayList<>();
+        groupOfEventShortDtos
                 .flatMap(eventShortDto -> Mono.just(eventShortDto)
                         .map(shortDto -> "/event/" + eventShortDto.getId())
                         .subscribeOn(Schedulers.parallel()))
                 .collectList()
-                .flatMapMany(groupUris -> webClient.getStats(dateTimeRange.getRangeStart().get(),
-                        dateTimeRange.getRangeEnd().get(), groupUris, uniqueValue));
+                .map(groupUris -> webClient.getStats(dateTimeRange.getRangeStart().get(),
+                        dateTimeRange.getRangeEnd().get(), groupUris, uniqueValue))
+                .subscribe(statDtoOuts1 -> statDtoOuts.addAll(statDtoOuts1));
+        return Flux.fromIterable(statDtoOuts);
     }
 
     private Boolean prepareUniqueValue(EventParams params) {
@@ -130,8 +132,8 @@ public class PublicEventServiceImpl implements PublicEventService {
                             datetimeRange.setRangeStart(Optional.of(start));
                             datetimeRange.setRangeEnd(Optional.of(end));
                         }), () -> {
-                    datetimeRange.setRangeStart(Optional.of(LocalDateTime.now().format(formatter)));
-                    datetimeRange.setRangeEnd(Optional.of(LocalDateTime.MAX.format(formatter)));
+                    datetimeRange.setRangeStart(Optional.of(LocalDateTime.now().minusMinutes(5).format(formatter)));
+                    datetimeRange.setRangeEnd(Optional.of(LocalDateTime.now().plusYears(50).format(formatter)));
                 });
         return datetimeRange;
     }
@@ -184,8 +186,8 @@ public class PublicEventServiceImpl implements PublicEventService {
 
     @Override
     public EventFullDto registerViewAndGetEventById(Long eventId, HttpServletRequest request) {
-        registerRequestInStatSvc(request);
-        EventFullDto eventFullDto = registerViewAndGetEventFullDto(eventId);
+        EventFullDto eventFullDto = registerRequestInStatSvc(request)
+                .map(httpCode -> registerViewAndGetEventFullDto(eventId)).block();
         return eventFullDto;
     }
 
@@ -210,9 +212,10 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         Flux<StatDtoOut> statDtoOutsFromStatSvc = getStatDtoOutsFromStatSvc(eventParams, eventShortDtoFlux, webClient);
 
-        List<EventShortDto> groupOfEventWithView = addViewsToEventShortDtos(eventShortDtoFlux, statDtoOutsFromStatSvc)
-                .toStream()
-                .collect(Collectors.toList());
+        List<EventShortDto> groupOfEventWithView = new ArrayList<>();
+
+        addViewsToEventShortDtos(eventShortDtoFlux, statDtoOutsFromStatSvc)
+                .subscribe(eventShortDto1 -> groupOfEventWithView.add(eventShortDto1));
 
         Long views = getViews(groupOfEventWithView);
 
@@ -238,7 +241,7 @@ public class PublicEventServiceImpl implements PublicEventService {
      */
     private Mono<Integer> registerRequestInStatSvc(HttpServletRequest request) {
         EndpointHit endpointHit = EndpointHit.builder()
-                .app("main-svc")
+                .app("ewm-main-service")
                 .uri(request.getRequestURI())
                 .ip(request.getRemoteAddr())
                 .timestamp(LocalDateTime.now().format(formatter)).build();
