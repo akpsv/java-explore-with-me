@@ -1,0 +1,1 @@
+INSERT INTO REQUESTS(requestor_app, request_uri, requestor_ip, request_time) VALUES ( 'app', 'http://test.server.ru/endpoint', '192.168.1.1', '2023-01-19 10:23:54' );
