@@ -54,8 +54,7 @@ public class StatsWebFluxController {
             LocalDateTime endDateTime = decodeParamToLocalDateTime(end);
 
             List<StatDtoOut> statDtoByParameters = statsService.getStatDtoByParameters(startDateTime, endDateTime, uris, unique);
-            Mono<ResponseEntity<?>> just = Mono.just(new ResponseEntity<>(statDtoByParameters, HttpStatus.OK));
-            return just;
+            return Mono.just(new ResponseEntity<>(statDtoByParameters, HttpStatus.OK));
         } catch (DateTimeParseException e) {
             return Mono.just(new ResponseEntity<>(Collections.emptyList(), HttpStatus.BAD_REQUEST));
         } catch (UnsupportedEncodingException e) {

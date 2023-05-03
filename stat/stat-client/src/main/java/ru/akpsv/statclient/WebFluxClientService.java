@@ -3,12 +3,12 @@ package ru.akpsv.statclient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.akpsv.statdto.EndpointHit;
 import ru.akpsv.statdto.StatDtoOut;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class WebFluxClientService {
@@ -28,9 +28,9 @@ public class WebFluxClientService {
                 .exchangeToMono(clientResponse -> Mono.just(clientResponse.rawStatusCode()));
     }
 
-    public List<StatDtoOut> getStats(String startTimestamp, String endTimestamp, List<String> uris, Boolean uniqueValue) {
-        List<StatDtoOut> statDtoOutList = new ArrayList<>();
-        webClient
+    public Flux<StatDtoOut> getStats(String startTimestamp, String endTimestamp, List<String> uris, Boolean uniqueValue) {
+//        List<StatDtoOut> statDtoOutList = new ArrayList<>();
+        return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/stats")
@@ -44,8 +44,9 @@ public class WebFluxClientService {
                         clientResponse -> Mono.just(new UnsupportedEncodingException("Строка представляющая время не может быть декодирована")))
                 .bodyToMono(ResponseEntity.class)
                 .map(responseEntity -> (ResponseEntity<List<StatDtoOut>>) responseEntity)
-                .subscribe(responseEntity -> statDtoOutList.addAll(responseEntity.getBody()));
+                .flatMapMany(listResponseEntity -> Flux.fromIterable(listResponseEntity.getBody()));
+//                .subscribe(responseEntity -> statDtoOutList.addAll(responseEntity.getBody()));
 
-        return statDtoOutList;
+//        return statDtoOutList;
     }
 }

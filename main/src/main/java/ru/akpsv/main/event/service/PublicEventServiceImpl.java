@@ -62,7 +62,10 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         log.debug("Добавить число просмотров в объекты EventShortDto и вернуть поток. {}");
         Flux<EventShortDto> eventShortDtoFlux = addViewsToEventShortDtos(eventShortDtos, statDtoOuts);
-        List<EventShortDto> resultEventShortDtos = eventShortDtoFlux.toStream().collect(Collectors.toList());
+//        List<EventShortDto> resultEventShortDtos = eventShortDtoFlux.toStream().collect(Collectors.toList());
+        List<EventShortDto> resultEventShortDtos = new ArrayList<>();
+        eventShortDtoFlux.subscribe(resultEventShortDtos::add);
+
         return resultEventShortDtos;
     }
 
@@ -113,7 +116,9 @@ public class PublicEventServiceImpl implements PublicEventService {
                 .collectList()
                 .map(groupUris -> webClient.getStats(dateTimeRange.getRangeStart().get(),
                         dateTimeRange.getRangeEnd().get(), groupUris, uniqueValue))
-                .subscribe(statDtoOuts1 -> statDtoOuts.addAll(statDtoOuts1));
+                .flatMapMany(Function.identity())
+                .subscribe(statDtoOuts1 -> statDtoOuts.add(statDtoOuts1));
+//                .subscribe(statDtoOuts1 -> statDtoOuts.addAll(statDtoOuts1));
         return Flux.fromIterable(statDtoOuts);
     }
 
