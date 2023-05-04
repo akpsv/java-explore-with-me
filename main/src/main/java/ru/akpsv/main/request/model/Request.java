@@ -26,7 +26,7 @@ public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "request_id")
-    private Long id;            //Идентификатор заявки (TODO: заполняется бд)
+    private Long id; //Идентификатор заявки (заполняется бд)
 
     @CreationTimestamp
     @Column(name = "created")

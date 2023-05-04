@@ -237,7 +237,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
                             confirmRequestAndAddToGroup(confirmedRequests, request);
                         } else {
                             setUnavailabilityForParticipation(event);
-                            rejectRequests(request).ifPresent(rejectedRequests::add); //TODO: отклонить все оставшиеся заявки
+                            rejectRequests(request).ifPresent(rejectedRequests::add);
                         }
                     });
         } else if (updateRequestStatus.getStatus().equals(RequestStatus.REJECTED.name())) {
