@@ -69,11 +69,9 @@ public class CompilationServiceImpl implements CompilationService {
     protected Compilation checkAndFillCompilationFields(UpdateCompilationRequest updatingRequest, Compilation compilation) {
 
         if (updatingRequest.getEvents() != null) {
-            Set<Event> events = updatingRequest.getEvents().stream()
-                    .map(eventRepository::findById)
-                    .flatMap(Optional::stream)
+            Set<Event> events = eventRepository.findAllById(updatingRequest.getEvents())
+                    .stream()
                     .collect(Collectors.toSet());
-
             compilation.setEvents(events);
         }
         if (updatingRequest.getPinned() != null) {
