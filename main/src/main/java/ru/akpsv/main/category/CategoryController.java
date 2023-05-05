@@ -34,12 +34,12 @@ public class CategoryController {
     }
 
     @GetMapping("/categories")
-    public List<Category> get(@RequestParam(defaultValue = "0") Integer from, @RequestParam(defaultValue = "10") Integer size) {
+    public List<CategoryDto> get(@RequestParam(defaultValue = "0") Integer from, @RequestParam(defaultValue = "10") Integer size) {
         return categoryService.get(from, size);
     }
 
     @GetMapping("/categories/{catId}")
-    public Category getCategoryById(@PathVariable Long catId) {
+    public CategoryDto getCategoryById(@PathVariable Long catId) {
         return categoryService.getCategoryById(catId);
     }
 }

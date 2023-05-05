@@ -13,6 +13,7 @@ import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -41,13 +42,17 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<Category> get(Integer from, Integer size) {
-        return categoryRepository.get(em, from, size);
+    public List<CategoryDto> get(Integer from, Integer size) {
+        return categoryRepository.get(em, from, size).stream()
+                .map(CategoryMapper::toCategoryDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Category getCategoryById(Long catId) {
-        return categoryRepository.findById(catId).orElseThrow(() -> new NoSuchElementException("Category with id=" + catId + " not exist"));
+    public CategoryDto getCategoryById(Long catId) {
+        return categoryRepository.findById(catId)
+                .map(CategoryMapper::toCategoryDto)
+                .orElseThrow(() -> new NoSuchElementException("Category with id=" + catId + " not exist"));
     }
 
     @Override
