@@ -10,5 +10,4 @@ public interface AdminEventService {
     List<EventFullDto> getEventsByAdminParams(EventParams params);
 
     EventFullDto updateEventByAdmin(UpdateEventAdminRequest updatingRequest, Long eventId);
-
 }

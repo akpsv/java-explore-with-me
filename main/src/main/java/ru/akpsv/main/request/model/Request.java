@@ -26,19 +26,19 @@ public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "request_id")
-    private Long id;            //Идентификатор заявки (TODO: заполняется бд)
+    private Long id; //Идентификатор заявки (заполняется бд)
 
     @CreationTimestamp
     @Column(name = "created")
-    private LocalDateTime created;     //example: 2022-09-06T21:10:05.432 Дата и время создания заявки (TODO: заполняется бд)
+    private LocalDateTime created; //example: 2022-09-06T21:10:05.432 Дата и время создания заявки (заполняется бд)
 
     @Column(name = "event_id", nullable = false)
-    private Long eventId;         //Идентификатор события
+    private Long eventId; //Идентификатор события
 
     @Column(name = "requester_id", nullable = false)
-    private Long requesterId;     //Идентификатор пользователя, отправившего заявку
+    private Long requesterId; //Идентификатор пользователя, отправившего заявку
 
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
-    private RequestStatus status;      //Статус заявки. example: PENDING (может быть перечисление)
+    private RequestStatus status; //Статус заявки. example: PENDING (может быть перечисление)
 }

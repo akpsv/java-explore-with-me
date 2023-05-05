@@ -11,5 +11,4 @@ public interface PublicEventService {
     List<EventShortDto> getEventsByPublicParams(EventParams params, HttpServletRequest request);
 
     EventFullDto registerViewAndGetEventById(Long eventId, HttpServletRequest request);
-
 }

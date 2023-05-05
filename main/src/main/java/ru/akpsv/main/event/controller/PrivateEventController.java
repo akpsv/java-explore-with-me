@@ -60,8 +60,5 @@ public class PrivateEventController {
                                                                           @PathVariable Long userId,
                                                                           @PathVariable Long eventId) {
         return privateEventService.changeRequestsStatusCurrentUser(updateRequestStatus, userId, eventId);
-
-
     }
-
 }

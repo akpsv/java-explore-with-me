@@ -25,7 +25,6 @@ import java.util.NoSuchElementException;
         RequestController.class
 })
 public class ErrorHandler {
-
     //Запрос составлен некорректно (400)
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -62,6 +61,7 @@ public class ErrorHandler {
                 .build();
     }
 
+    //Нарушение целостности данных (409)
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleIncorrectRequest(javax.validation.ConstraintViolationException exception) {
@@ -73,6 +73,7 @@ public class ErrorHandler {
                 .build();
     }
 
+    //Нарушение целостности данных (409)
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleIntegrityConstraint(final ConstraintViolationException exception) {
@@ -84,6 +85,7 @@ public class ErrorHandler {
                 .build();
     }
 
+    //Нарушение целостности данных (409)
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleIntegrityConstraint(final LimitReachedException exception) {
@@ -106,6 +108,4 @@ public class ErrorHandler {
                 .timestamp(LocalDateTime.now().toString())
                 .build();
     }
-
-
 }

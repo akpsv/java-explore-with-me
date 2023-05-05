@@ -23,7 +23,6 @@ public class Compilation {
     private String title;
     @Column(name = "pinned")
     private boolean pinned;
-    //TODO: доделать в соовтетствии с заданием возможно многие ко многим
     @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "events_compilations",

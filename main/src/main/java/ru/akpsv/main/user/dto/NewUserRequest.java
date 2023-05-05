@@ -13,8 +13,8 @@ import javax.validation.constraints.NotBlank;
 public class NewUserRequest {
     //Данные нового пользователя
     @NotBlank
-    private String name;    //Имя
+    private String name; //Имя
     @Email
     @NotBlank
-    private String email;   //Почтовый адрес
+    private String email; //Почтовый адрес
 }

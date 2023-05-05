@@ -29,7 +29,6 @@ public class WebFluxClientService {
     }
 
     public Flux<StatDtoOut> getStats(String startTimestamp, String endTimestamp, List<String> uris, Boolean uniqueValue) {
-//        List<StatDtoOut> statDtoOutList = new ArrayList<>();
         return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
@@ -45,8 +44,5 @@ public class WebFluxClientService {
                 .bodyToMono(ResponseEntity.class)
                 .map(responseEntity -> (ResponseEntity<List<StatDtoOut>>) responseEntity)
                 .flatMapMany(listResponseEntity -> Flux.fromIterable(listResponseEntity.getBody()));
-//                .subscribe(responseEntity -> statDtoOutList.addAll(responseEntity.getBody()));
-
-//        return statDtoOutList;
     }
 }

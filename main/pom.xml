@@ -7,12 +7,11 @@
         <groupId>ru.akpsv</groupId>
         <version>0.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
-
     </parent>
+
     <groupId>ru.akpsv</groupId>
     <artifactId>main</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-
     <name>main</name>
     <description>main</description>
 
@@ -60,12 +59,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.zalando</groupId>
-            <artifactId>logbook-spring-boot-starter</artifactId>
-            <version>2.14.0</version>
-        </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-jpamodelgen</artifactId>
@@ -111,9 +104,7 @@
     </dependencies>
 
     <build>
-
         <plugins>
-
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -144,7 +135,6 @@
                 </configuration>
             </plugin>
         </plugins>
-
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -152,5 +142,4 @@
             </resource>
         </resources>
     </build>
-
 </project>

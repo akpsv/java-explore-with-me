@@ -24,7 +24,6 @@ public class PublicEventController {
     /**
      * Public: События. Публичный АПИ для работы с событиями
      */
-
     @GetMapping("/events")
     public List<EventShortDto> getPublicEventsByParams(@RequestParam Optional<String> text,
                                                        @RequestParam Optional<List<Long>> categories,

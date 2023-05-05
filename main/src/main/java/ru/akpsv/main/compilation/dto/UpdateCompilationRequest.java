@@ -15,7 +15,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateCompilationRequest {
-    private Set<Long> events;   //Список id событий подборки для полной замены текущего списка
-    private Boolean pinned;     //Закреплена ли подборка на главной странице сайта
-    private String title;       //Заголовок подборки
+    private Set<Long> events; //Список id событий подборки для полной замены текущего списка
+    private Boolean pinned; //Закреплена ли подборка на главной странице сайта
+    private String title; //Заголовок подборки
 }

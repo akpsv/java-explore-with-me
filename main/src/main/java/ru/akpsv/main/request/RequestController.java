@@ -40,6 +40,4 @@ public class RequestController {
     public ParticipationRequestDto cancelOwnRequest(@PathVariable Long userId, @PathVariable Long requestId) {
         return requestService.cancelOwnRequest(userId, requestId);
     }
-
-
 }

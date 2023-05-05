@@ -27,10 +27,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -39,7 +36,6 @@ import java.util.stream.Collectors;
 public class PublicEventServiceImpl implements PublicEventService {
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final EventRepository eventRepository;
-
     private final WebFluxClientService webClient;
 
     @Autowired
@@ -61,15 +57,13 @@ public class PublicEventServiceImpl implements PublicEventService {
         Flux<StatDtoOut> statDtoOuts = getStatDtoOutsFromStatSvc(params, eventShortDtos, webClient);
 
         log.debug("Добавить число просмотров в объекты EventShortDto и вернуть поток. {}");
-        Flux<EventShortDto> eventShortDtoFlux = addViewsToEventShortDtos(eventShortDtos, statDtoOuts);
-//        List<EventShortDto> resultEventShortDtos = eventShortDtoFlux.toStream().collect(Collectors.toList());
         List<EventShortDto> resultEventShortDtos = new ArrayList<>();
-        eventShortDtoFlux.subscribe(resultEventShortDtos::add);
-
+        addViewsToEventShortDtos(eventShortDtos, statDtoOuts).subscribe(resultEventShortDtos::add);
         return resultEventShortDtos;
     }
 
     protected Flux<EventShortDto> addViewsToEventShortDtos(Flux<EventShortDto> eventShortDtos, Flux<StatDtoOut> statDtoOuts) {
+        log.debug("Добавить количество просмотров в EventShortDto");
         Flux<EventShortDto> eventShortDtoFlux = statDtoOuts.hasElements()
                 .map(isAvailable -> {
                             Flux<EventShortDto> eventShortDtoFlux1;
@@ -91,6 +85,7 @@ public class PublicEventServiceImpl implements PublicEventService {
     }
 
     private Long getIdFromUri(String uri) {
+        log.debug("Вызван метод getIdFromUri c uri={}", uri);
         if (uri != null) {
             try {
                 URL url = new URL(uri);
@@ -118,7 +113,6 @@ public class PublicEventServiceImpl implements PublicEventService {
                         dateTimeRange.getRangeEnd().get(), groupUris, uniqueValue))
                 .flatMapMany(Function.identity())
                 .subscribe(statDtoOuts1 -> statDtoOuts.add(statDtoOuts1));
-//                .subscribe(statDtoOuts1 -> statDtoOuts.addAll(statDtoOuts1));
         return Flux.fromIterable(statDtoOuts);
     }
 

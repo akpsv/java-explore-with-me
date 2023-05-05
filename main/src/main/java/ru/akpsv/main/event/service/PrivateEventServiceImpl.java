@@ -62,7 +62,6 @@ public class PrivateEventServiceImpl implements PrivateEventService {
                 .collect(toList());
     }
 
-
     @Override
     public EventFullDto updateEventByCurrentUser(UpdateEventUserRequest updatingRequest, Long userId, Long eventId) {
         return eventRepository.getEventByInitiatorIdAndId(userId, eventId)
@@ -125,7 +124,6 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         return updatingEvent;
     }
 
-
     /**
      * Проверка условий изменения поля state для текущего пользователя и его заполнение
      *
@@ -164,7 +162,6 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         }
         return updatingEvent;
     }
-
 
     @Override
     public EventFullDto getFullEventInfoByUser(Long userId, Long eventId) {
@@ -237,7 +234,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
                             confirmRequestAndAddToGroup(confirmedRequests, request);
                         } else {
                             setUnavailabilityForParticipation(event);
-                            rejectRequests(request).ifPresent(rejectedRequests::add); //TODO: отклонить все оставшиеся заявки
+                            rejectRequests(request).ifPresent(rejectedRequests::add);
                         }
                     });
         } else if (updateRequestStatus.getStatus().equals(RequestStatus.REJECTED.name())) {

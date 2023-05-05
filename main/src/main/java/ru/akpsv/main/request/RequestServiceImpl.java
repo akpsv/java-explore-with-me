@@ -12,8 +12,6 @@ import ru.akpsv.main.request.model.Request;
 import ru.akpsv.main.request.model.RequestStatus;
 import ru.akpsv.main.request.repository.RequestRepository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -24,8 +22,6 @@ import java.util.stream.Collectors;
 public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRepository;
     private final EventRepository eventRepository;
-    @PersistenceContext
-    private EntityManager em;
 
     @Override
     public ParticipationRequestDto create(Long userId, Long eventId) {

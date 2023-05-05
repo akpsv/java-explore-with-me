@@ -15,6 +15,6 @@ import java.util.List;
 @Builder(toBuilder = true)
 public class EventRequestStatusUpdateResult {
     private List<ParticipationRequestDto> confirmedRequests;  //Идентификаторы запросов на участие в событии текущего пользователя
-    private List<ParticipationRequestDto> rejectedRequests;      //Новый статус запроса на участие в событии текущего пользователя (Enum: [CONFIRMED, REJECTED])
+    private List<ParticipationRequestDto> rejectedRequests; //Новый статус запроса на участие в событии текущего пользователя (Enum: [CONFIRMED, REJECTED])
 }
 

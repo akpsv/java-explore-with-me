@@ -63,7 +63,6 @@ public class StatsRepositoryAdvancedImpl implements StatsRepositoryAdvanced {
                             .build();
                     result.put(request, (Long) tuple.get(2));
                 });
-
         return result;
     }
 }

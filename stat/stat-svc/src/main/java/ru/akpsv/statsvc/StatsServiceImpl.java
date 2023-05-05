@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-//@RequiredArgsConstructor
 @Service
 public class StatsServiceImpl implements StatsService {
     private final StatsRepository statsRepository;

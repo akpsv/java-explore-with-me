@@ -13,6 +13,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class EventRequestStatusUpdateRequest {
-    private List<Long> requestIds;  //Идентификаторы запросов на участие в событии текущего пользователя
-    private String status;      //Новый статус запроса на участие в событии текущего пользователя (Enum: [CONFIRMED, REJECTED])
+    private List<Long> requestIds; //Идентификаторы запросов на участие в событии текущего пользователя
+    private String status; //Новый статус запроса на участие в событии текущего пользователя (Enum: [CONFIRMED, REJECTED])
 }

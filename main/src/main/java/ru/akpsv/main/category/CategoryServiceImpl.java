@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     @PersistenceContext
-    EntityManager em;
+    private final EntityManager em;
 
     @Override
     public CategoryDto create(NewCategoryDto newCategory) {

@@ -76,4 +76,3 @@ logging:
 
 main-svc:
   url: "http://localhost:9090"
-

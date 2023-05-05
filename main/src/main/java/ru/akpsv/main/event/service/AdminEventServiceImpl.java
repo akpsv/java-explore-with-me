@@ -155,5 +155,4 @@ public class AdminEventServiceImpl implements AdminEventService {
         updatingEvent = updatingEvent.toBuilder().state(EventState.CANCELED).build();
         return updatingEvent;
     }
-
 }

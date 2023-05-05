@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 interface StatsService {
-
     Request save(EndpointHit endpointHit);
 
     List<StatDtoOut> getStatDtoByParameters(LocalDateTime startDateTime, LocalDateTime endDateTime, Optional<List<String>> uris, boolean unique);

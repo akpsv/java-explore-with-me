@@ -15,7 +15,6 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 public class AdminEventCotnroller {
-
     private final AdminEventService adminEventService;
 
     /**

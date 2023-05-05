@@ -9,5 +9,4 @@ public interface EventRepositoryAdvanced {
     Event getFullEventInfoByUser(Long userId, Long eventId);
 
     List<Event> getEvents(EventParams params, CriteriaQueryPreparation<Event> queryPreparation);
-
 }

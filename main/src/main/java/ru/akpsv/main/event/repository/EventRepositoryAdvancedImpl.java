@@ -41,5 +41,3 @@ public class EventRepositoryAdvancedImpl implements EventRepositoryAdvanced {
         return query.getSingleResult();
     }
 }
-
-

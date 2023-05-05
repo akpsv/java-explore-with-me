@@ -23,7 +23,7 @@ public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
     @PersistenceContext
-    private EntityManager em;
+    private final EntityManager em;
 
     @Override
     public CompilationDto create(NewCompilationDto newCompilationDto) {
