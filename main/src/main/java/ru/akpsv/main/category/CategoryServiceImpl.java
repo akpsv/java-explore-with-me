@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import ru.akpsv.main.category.dto.CategoryDto;
 import ru.akpsv.main.category.dto.CategoryMapper;
 import ru.akpsv.main.category.dto.NewCategoryDto;
-import ru.akpsv.main.category.model.Category;
 import ru.akpsv.main.error.ViolationOfRestrictionsException;
 
 import javax.persistence.EntityManager;

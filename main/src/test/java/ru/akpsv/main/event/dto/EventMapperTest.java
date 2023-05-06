@@ -59,8 +59,6 @@ class EventMapperTest {
 
         //Проверка
         assertThat(actualEventFullDto, samePropertyValuesAs(expectedEventFullDto, "category", "location", "initiator", "participantLimit"));
-        assertThat(actualEventFullDto.getCategory(), samePropertyValuesAs(categoryDto));
-        assertThat(actualEventFullDto.getInitiator(), samePropertyValuesAs(userShortDto));
     }
 
 

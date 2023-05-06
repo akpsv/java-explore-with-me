@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.akpsv.main.category.dto.CategoryDto;
 import ru.akpsv.main.category.dto.NewCategoryDto;
-import ru.akpsv.main.category.model.Category;
 
 import javax.validation.Valid;
 import java.util.List;

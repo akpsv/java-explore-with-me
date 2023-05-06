@@ -2,7 +2,6 @@ package ru.akpsv.main.category;
 
 import ru.akpsv.main.category.dto.CategoryDto;
 import ru.akpsv.main.category.dto.NewCategoryDto;
-import ru.akpsv.main.category.model.Category;
 
 import java.util.List;
 

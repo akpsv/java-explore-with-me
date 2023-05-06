@@ -2,8 +2,8 @@ package ru.akpsv.main.event.dto;
 
 
 import lombok.*;
-import ru.akpsv.main.category.dto.CategoryDto;
-import ru.akpsv.main.user.dto.UserShortDto;
+
+import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter
@@ -20,4 +20,21 @@ public class EventShortDto {
     private boolean paid;
     private String title;
     private Long views;
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    public static class CategoryDto {
+        private Long id;
+        @NotBlank
+        private String name;
+    }
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    public static class UserShortDto {
+        private Long id;
+        private String name;
+    }
 }

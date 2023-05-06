@@ -51,13 +51,20 @@ public class EventMapper {
 
         return EventFullDto.builder()
                 .annotation(event.getAnnotation())
-                .category(getCategoryDto(event))
+//                .category(getCategoryDto(event))
+                .category(new EventFullDto.CategoryDto(
+                        getCategoryDto(event).getId(),
+                        getCategoryDto(event).getName()
+                ))
                 .confirmedRequests(event.getConfirmedRequests())
                 .createdOn(event.getCreatedOn().format(formatter))
                 .description(event.getDescription())
                 .eventDate(event.getEventDate().format(formatter))
                 .id(event.getId())
-                .initiator(getUserShortDto(event))
+                .initiator(new EventFullDto.UserShortDto(
+                        getUserShortDto(event).getId(),
+                        getUserShortDto(event).getName()
+                        ))
                 .location(event.getLocation())
                 .paid(event.getPaid())
                 .participantLimit(event.getParticipantLimit())
@@ -73,10 +80,16 @@ public class EventMapper {
         return EventShortDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
-                .category(getCategoryDto(event))
+                .category(new EventShortDto.CategoryDto(
+                        getCategoryDto(event).getId(),
+                        getCategoryDto(event).getName()
+                ))
                 .confirmedRequests(event.getConfirmedRequests())
                 .eventDate(event.getEventDate().format(formatter))
-                .initiator(getUserShortDto(event))
+                .initiator(new EventShortDto.UserShortDto(
+                        getUserShortDto(event).getId(),
+                        getUserShortDto(event).getName()
+                ))
                 .paid(event.getPaid())
                 .title(event.getTitle())
                 .views(event.getViews())
