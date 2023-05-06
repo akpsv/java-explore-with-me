@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+/docs/
+/testdb/
+/stat-svc-testdb/
+
+/subscribe/
