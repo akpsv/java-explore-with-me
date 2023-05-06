@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.akpsv.main.event.dto.EventShortDto;
 import ru.akpsv.main.event.service.PrivateEventService;
+import ru.akpsv.main.subscribe.dto.SubscribeDtoOut;
+import ru.akpsv.main.subscribe.dto.SubscribeMapper;
 import ru.akpsv.main.subscribe.model.Subscribe;
 import ru.akpsv.main.subscribe.model.SubscribeId;
 import ru.akpsv.main.user.UserService;
@@ -20,19 +22,20 @@ public class SubscribeServiceImpl implements SubscribeService {
     private final UserService userService;
 
     @Override
-    public Subscribe addSubscriber(Long subscriberId, Long publisherId) {
-        Subscribe savedSubscribe = repository.save(Subscribe.builder()
-                .id(new SubscribeId(subscriberId, publisherId))
-                .build()
+    public SubscribeDtoOut addSubscriber(Long subscriberId, Long publisherId) {
+        Subscribe savedSubscribe = repository.save(
+                Subscribe.builder()
+                        .id(new SubscribeId(subscriberId, publisherId))
+                        .build()
         );
         Function<Subscribe, Boolean> notifyFunc = subscribe -> {
             List<EventShortDto> publisherEvents = eventService.getEventsByUser(savedSubscribe.getId().getPublisherId(), null, null);
             List<UserDto> subscribersByIds = userService.getUsersByIds(List.of(savedSubscribe.getId().getSubscriberId()), null, null);
             return new EmailService().sendEmails(subscribersByIds, publisherEvents);
         };
-
         notifySubscribers(savedSubscribe, notifyFunc);
-        return savedSubscribe;
+
+        return SubscribeMapper.subscribeDtoOut(savedSubscribe);
     }
 
 //    protected Boolean notifySubscribers(Subscribe subscribe){
@@ -41,13 +44,12 @@ public class SubscribeServiceImpl implements SubscribeService {
 //        return new EmailService().sendEmails(subscribersByIds, publisherEvents);
 //    }
 
-    protected <T,R> R notifySubscribers(T subscribe, Function<T,R> notifyFunc){
+    protected <T, R> R notifySubscribers(T subscribe, Function<T, R> notifyFunc) {
         return notifyFunc.apply(subscribe);
     }
 
     @Override
-    public List<Subscribe> getSubscribes(Long subscriberId) {
+    public List<SubscribeDtoOut> getSubscribes(Long subscriberId) {
         throw new UnsupportedOperationException("Метод не релизован");
     }
-
 }

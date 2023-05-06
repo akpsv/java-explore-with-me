@@ -1,11 +1,12 @@
 package ru.akpsv.main.subscribe;
 
+import ru.akpsv.main.subscribe.dto.SubscribeDtoOut;
 import ru.akpsv.main.subscribe.model.Subscribe;
 
 import java.util.List;
 
 public interface SubscribeService {
-    Subscribe addSubscriber(Long subscriberId, Long publisherId);
+    SubscribeDtoOut addSubscriber(Long subscriberId, Long publisherId);
 
-    List<Subscribe> getSubscribes(Long subscriberId);
+    List<SubscribeDtoOut> getSubscribes(Long subscriberId);
 }

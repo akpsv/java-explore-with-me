@@ -2,6 +2,7 @@ package ru.akpsv.main.subscribe;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.akpsv.main.subscribe.dto.SubscribeDtoOut;
 import ru.akpsv.main.subscribe.model.Subscribe;
 
 import java.util.List;
@@ -12,12 +13,12 @@ import java.util.List;
 public class SubscribeController {
     private final SubscribeService service;
     @PostMapping
-    public Subscribe addSubscribe(@RequestParam Long subscriberId, @RequestParam Long publisherId){
+    public SubscribeDtoOut addSubscribe(@RequestParam Long subscriberId, @RequestParam Long publisherId){
         return service.addSubscriber(subscriberId, publisherId);
     }
 
     @GetMapping("/{subscriberId}")
-    public List<Subscribe> getSubscribes(@PathVariable Long subscriberId){
+    public List<SubscribeDtoOut> getSubscribes(@PathVariable Long subscriberId){
         return service.getSubscribes(subscriberId);
     }
 
