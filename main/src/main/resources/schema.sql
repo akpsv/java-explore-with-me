@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS events CASCADE;
 DROP TABLE IF EXISTS compilations CASCADE;
 DROP TABLE IF EXISTS events_compilations CASCADE;
 DROP TABLE IF EXISTS requests CASCADE;
+DROP TABLE IF EXISTS subscribers CASCADE ;
 
 CREATE TABLE users
 (
@@ -64,4 +65,13 @@ CREATE TABLE requests
     status       VARCHAR(20),
     CONSTRAINT UNQ_REQUEST UNIQUE (event_id, requester_id)
 );
+
+CREATE TABLE subscribers
+(
+    subscriber_id BIGINT REFERENCES users (user_id),
+    publisher_id  BIGINT REFERENCES users (user_id),
+    PRIMARY KEY (subscriber_id, publisher_id)
+);
+
+
 

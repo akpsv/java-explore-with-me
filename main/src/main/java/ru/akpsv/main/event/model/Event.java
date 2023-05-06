@@ -34,7 +34,6 @@ public class Event {
     @Column(name = "category_id")
     private Long categoryId;
 
-
     @CreationTimestamp
     @Column(name = "created_on")
     private LocalDateTime createdOn; //Дата и время создания события (в формате "yyyy-MM-dd HH:mm:ss") (Заполняется базой при сохранении)
@@ -62,7 +61,6 @@ public class Event {
 
     @Column(name = "published_on")
     private LocalDateTime publishedOn; //Дата и время публикации события (в формате "yyyy-MM-dd HH:mm:ss") (Заполняестя во время работы)
-
     @Column(name = "request_moderation")
     private Boolean requestModeration; //Нужна ли пре-модерация заявок на участие
 
