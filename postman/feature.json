@@ -1,0 +1,385 @@
+{
+	"info": {
+		"_postman_id": "0be5ff15-2ee0-4ff7-b299-075d491da6da",
+		"name": "Test feature_subscriptions",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27173577"
+	},
+	"item": [
+		{
+			"name": "Добавить пользовтаеля user1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код 201 и тело в формате JSON\",\r",
+							"function(){\r",
+							"    pm.response.to.have.status(201);\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\":\"user1\",\r\n    \"email\":\"user1@mail.ru\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/users",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Добавить пользовтаеля user2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код 201 и тело в формате JSON\",\r",
+							"function(){\r",
+							"    pm.response.to.have.status(201);\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\":\"user2\",\r\n    \"email\":\"testewm@yandex.ru\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/users",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Добавить категорию",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код 201 и тело в формате JSON\",\r",
+							"function(){\r",
+							"    pm.response.to.have.status(201);\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\":\"category1\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/categories",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"categories"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Добавить событие",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код 201 и тело в формате JSON\",\r",
+							"function(){\r",
+							"    pm.response.to.have.status(201);\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"annotation\":\"Maiores architecto consectetur minima ut veniam quis nostrum. Excepturi rerum ut possimus. Et ut reiciendis. Similique consequatur pariatur accusamus quia. Ducimus a veniam.\",\r\n    \"category\":1,\r\n    \"description\":\"Enim delectus quibusdam expedita. Et necessitatibus neque quaerat perferendis. Voluptas minima impedit facere libero voluptate voluptas fugiat provident. Consequuntur aperiam recusandae.\\n \\rNulla rerum tempora suscipit necessitatibus. Vitae et dignissimos provident enim rem culpa magnam eius. Et eligendi eos voluptas deleniti quis molestiae praesentium magnam iusto. Laboriosam nesciunt id ut unde non quod ut aspernatur molestiae. Adipisci molestiae voluptates. Deserunt ut quia vel cumque id eaque.\\n \\rPariatur esse dignissimos velit. Asperiores similique dolor hic cupiditate ipsam. Itaque laborum explicabo ipsam cupiditate unde tempora occaecati. Et exercitationem numquam error. Incidunt molestiae sapiente maxime repellendus assumenda. Voluptatum velit voluptate.\",\r\n    \"eventDate\":\"2023-06-09 21:50:40\",\r\n    \"location\":{\r\n        \"lat\":-25.819,\r\n        \"lon\":25.2376\r\n        },\r\n    \"paid\":\"false\",\r\n    \"participantLimit\":\"548\",\r\n    \"requestModeration\":\"false\",\r\n    \"title\":\"Praesentium quia cumque veniam.\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/users/:userId/events",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"users",
+						":userId",
+						"events"
+					],
+					"variable": [
+						{
+							"key": "userId",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Создать подписку",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\r",
+							"    \"Ответ должен содержать код статуса 201 и тело в формате JSON\",\r",
+							"    function(){\r",
+							"        pm.response.to.have.status(201);\r",
+							"        pm.response.to.be.withBody;\r",
+							"        pm.response.to.be.json;\r",
+							"    }\r",
+							")"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"subscriberId\":1,\r\n    \"publisherId\":2\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/subscribes",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"subscribes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Изменение статуса события на опубилковано",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код 200 и тело в формате JSON\",\r",
+							"function(){\r",
+							"    pm.response.to.be.ok;\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json; \r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"stateAction\":\"PUBLISH_EVENT\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/admin/events/:eventId",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"admin",
+						"events",
+						":eventId"
+					],
+					"variable": [
+						{
+							"key": "eventId",
+							"value": "{{eid}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Проверка получения списка подписок подписчика",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код 200 и тело в формате JSON\",function(){\r",
+							"    pm.response.to.be.ok;\r",
+							"    pm.response.to.be.withBody;\r",
+							"    pm.response.to.be.json;\r",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/subscribes/1",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"subscribes",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Проверка удаления подписки подписчика",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ответ должен содержать код 204\",\r",
+							"function(){\r",
+							"    pm.response.to.have.status(204);\r",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/subscribes/1",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"subscribes",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "uid",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "eid",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}
