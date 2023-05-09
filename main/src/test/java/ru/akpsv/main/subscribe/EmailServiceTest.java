@@ -12,10 +12,7 @@ import ru.akpsv.TestHelper;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.user.model.User;
 
-import javax.mail.internet.MimeMessage;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class EmailServiceTest {

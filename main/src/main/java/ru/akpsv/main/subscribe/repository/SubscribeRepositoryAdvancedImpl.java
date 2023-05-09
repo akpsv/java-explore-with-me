@@ -1,15 +1,6 @@
 package ru.akpsv.main.subscribe.repository;
 
 import lombok.RequiredArgsConstructor;
-import ru.akpsv.main.subscribe.model.Subscribe;
-import ru.akpsv.main.subscribe.model.Subscribe_;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-import java.util.List;
 
 @RequiredArgsConstructor
 public class SubscribeRepositoryAdvancedImpl implements SubscribeRepositoryAdvanced {

@@ -46,7 +46,7 @@ public class SubscribeServiceImpl implements SubscribeService {
                     savedSubscribe.getPublisherId(),
                     EventState.PUBLISHED);
 
-            if (publishedEventsOfPublisher.size()==0){
+            if (publishedEventsOfPublisher.size() == 0) {
                 return false;
             }
             User subscriber = userRepository.findById(subscribeDtoIn.getSubscriberId())

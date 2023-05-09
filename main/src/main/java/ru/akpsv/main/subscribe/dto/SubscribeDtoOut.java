@@ -4,9 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import ru.akpsv.main.user.model.User;
-
-import javax.persistence.Column;
 
 @Getter
 @Setter
@@ -21,7 +18,7 @@ public class SubscribeDtoOut {
     @Getter
     @Setter
     @AllArgsConstructor
-    public static class UserDtoOut{
+    public static class UserDtoOut {
         private String name;
         private String email;
     }

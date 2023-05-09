@@ -29,16 +29,20 @@ spring:
     password: password
     properties:
       mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-
-#  spring.mail.port=587
-#  spring.mail.username=<login user to smtp server>
-#  spring.mail.password=<login password to smtp server>
-#  spring.mail.properties.mail.smtp.auth=true
-#  spring.mail.properties.mail.smtp.starttls.enable=true
+        host: smtp.yandex.ru
+        port: 465
+        username: testewm@yandex.ru
+        password: jfsfxoktowkmuydr
+        properties:
+          mail:
+            protocol: smtps
+            smtp:
+              connectiontimeout: 5000
+              timeout: 3000
+              writetimeout: 5000
+              auth: true
+              ssl:
+                enable: true
 
 logging:
   level:
@@ -81,11 +85,17 @@ spring:
     password: jfsfxoktowkmuydr
     properties:
       mail:
+        protocol: smtps
         smtp:
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
           auth: true
-          starttls:
+          ssl:
             enable: true
 
+mail:
+  debug: true
 #datasource:
 #    url: jdbc:h2:file:./testdb/test-main-svc
 #    driver-class-name: org.h2.Driver

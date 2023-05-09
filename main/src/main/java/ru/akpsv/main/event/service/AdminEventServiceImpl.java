@@ -12,10 +12,8 @@ import ru.akpsv.main.event.repository.CriteriaQueryPreparation;
 import ru.akpsv.main.event.repository.EventRepository;
 import ru.akpsv.main.subscribe.EmailService;
 import ru.akpsv.main.subscribe.SubscribeService;
-import ru.akpsv.main.subscribe.dto.SubscribeDtoOut;
 import ru.akpsv.main.subscribe.model.Subscribe;
 import ru.akpsv.main.subscribe.repository.SubscribeRepository;
-import ru.akpsv.main.user.UserService;
 import ru.akpsv.main.user.model.User;
 import ru.akpsv.main.user.repository.UserRepository;
 

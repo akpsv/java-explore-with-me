@@ -13,20 +13,21 @@ import java.util.List;
 @RequestMapping("/subscribes")
 public class SubscribeController {
     private final SubscribeService subscribeService;
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SubscribeDtoOut addSubscribe(@RequestBody SubscribeDtoIn subscribeDtoIn){
+    public SubscribeDtoOut addSubscribe(@RequestBody SubscribeDtoIn subscribeDtoIn) {
         return subscribeService.addSubscribe(subscribeDtoIn);
     }
 
     @GetMapping("/{subscriberId}")
-    public List<SubscribeDtoOut> getPulblishersOfSubscriber(@PathVariable Long subscriberId){
+    public List<SubscribeDtoOut> getPulblishersOfSubscriber(@PathVariable Long subscriberId) {
         return subscribeService.getSubscribesOfSubscriber(subscriberId);
     }
 
     @DeleteMapping("/{subscribeId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteSubscribe(@PathVariable Long subscribeId){
+    public void deleteSubscribe(@PathVariable Long subscribeId) {
         subscribeService.deleteSubscribe(subscribeId);
     }
 

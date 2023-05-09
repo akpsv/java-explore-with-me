@@ -9,8 +9,6 @@ import ru.akpsv.main.event.service.PrivateEventService;
 import ru.akpsv.main.subscribe.repository.SubscribeRepository;
 import ru.akpsv.main.user.UserService;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-
 @ExtendWith(MockitoExtension.class)
 class SubscribeServiceImplTest {
     @Mock

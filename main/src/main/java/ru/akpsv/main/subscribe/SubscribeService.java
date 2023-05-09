@@ -2,7 +2,6 @@ package ru.akpsv.main.subscribe;
 
 import ru.akpsv.main.subscribe.dto.SubscribeDtoIn;
 import ru.akpsv.main.subscribe.dto.SubscribeDtoOut;
-import ru.akpsv.main.subscribe.model.Subscribe;
 
 import java.util.List;
 import java.util.function.Function;
