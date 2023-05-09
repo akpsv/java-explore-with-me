@@ -22,6 +22,23 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: sa
     password: sa
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: username
+    password: password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+#  spring.mail.port=587
+#  spring.mail.username=<login user to smtp server>
+#  spring.mail.password=<login password to smtp server>
+#  spring.mail.properties.mail.smtp.auth=true
+#  spring.mail.properties.mail.smtp.starttls.enable=true
 
 logging:
   level:
@@ -57,6 +74,18 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: postgres
+  mail:
+    host: smtp.yandex.ru
+    port: 465
+    username: testewm@yandex.ru
+    password: jfsfxoktowkmuydr
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 #datasource:
 #    url: jdbc:h2:file:./testdb/test-main-svc
 #    driver-class-name: org.h2.Driver

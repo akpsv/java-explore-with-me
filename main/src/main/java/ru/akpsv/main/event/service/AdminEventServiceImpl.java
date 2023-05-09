@@ -10,6 +10,14 @@ import ru.akpsv.main.event.model.EventState;
 import ru.akpsv.main.event.model.Event_;
 import ru.akpsv.main.event.repository.CriteriaQueryPreparation;
 import ru.akpsv.main.event.repository.EventRepository;
+import ru.akpsv.main.subscribe.EmailService;
+import ru.akpsv.main.subscribe.SubscribeService;
+import ru.akpsv.main.subscribe.dto.SubscribeDtoOut;
+import ru.akpsv.main.subscribe.model.Subscribe;
+import ru.akpsv.main.subscribe.repository.SubscribeRepository;
+import ru.akpsv.main.user.UserService;
+import ru.akpsv.main.user.model.User;
+import ru.akpsv.main.user.repository.UserRepository;
 
 import javax.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
@@ -17,12 +25,17 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AdminEventServiceImpl implements AdminEventService {
     private final EventRepository eventRepository;
+    private final UserRepository userRepository;
+    private final SubscribeRepository subscribeRepository;
+    private final EmailService emailService;
+    private final SubscribeService subscribeService;
 
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -121,16 +134,47 @@ public class AdminEventServiceImpl implements AdminEventService {
      * @param updatingEvent
      * @return
      */
-    private Event checkAdminConditionsAndFillStateField(UpdateEventRequest request, Event updatingEvent) {
+
+    protected Event checkAdminConditionsAndFillStateField(UpdateEventRequest request, Event updatingEvent) {
         if (request.getStateAction() != null) {
             if (request.getStateAction().equals(StateAction.PUBLISH_EVENT.name())) {
                 checkOfPending(updatingEvent);
                 updatingEvent = checkAndSetPublishedOnTime(updatingEvent);
+                //////////////////////////////////////////////////////////////////////////////
+                notifySubscribers(updatingEvent);
+                //////////////////////////////////////////////////////////////////////////////
             } else {
                 updatingEvent = checkAndSetCanceledState(updatingEvent);
             }
         }
         return updatingEvent;
+    }
+
+    protected void notifySubscribers(Event updatingEvent) {
+        //TODO: Оповестить подписавшихся пользователей
+        Subscribe subscribeWithPublisherId = Subscribe.builder()
+                .subscribeId(-1L)
+                .subscriberId(-1L)
+                .publisherId(updatingEvent.getInitiatorId())
+                .build();
+
+        Function<Subscribe, Boolean> notifyFunc = subscribe -> {
+            List<Long> subscribersIdOfPublisher = subscribeRepository
+                    .findByPublisherId(subscribe.getPublisherId())
+                    .stream()
+                    .map(Subscribe::getPublisherId)
+                    .collect(Collectors.toList());
+
+            List<String> subscribersEmails = userRepository
+                    .findAllById(subscribersIdOfPublisher)
+                    .stream()
+                    .map(User::getEmail)
+                    .collect(Collectors.toList());
+
+            emailService.sendEmails(subscribersEmails, updatingEvent);
+            return true;
+        };
+        subscribeService.notifySubscribers(subscribeWithPublisherId, notifyFunc);
     }
 
     private void checkOfPending(Event updatingEvent) {

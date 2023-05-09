@@ -1,12 +1,20 @@
 package ru.akpsv.main.subscribe;
 
+import ru.akpsv.main.subscribe.dto.SubscribeDtoIn;
 import ru.akpsv.main.subscribe.dto.SubscribeDtoOut;
 import ru.akpsv.main.subscribe.model.Subscribe;
 
 import java.util.List;
+import java.util.function.Function;
 
 public interface SubscribeService {
-    SubscribeDtoOut addSubscriber(Long subscriberId, Long publisherId);
+    SubscribeDtoOut addSubscribe(SubscribeDtoIn subscribeDtoIn);
 
-    List<SubscribeDtoOut> getSubscribes(Long subscriberId);
+    void deleteSubscribe(Long subscribeId);
+
+    List<SubscribeDtoOut> getSubscribesOfPublisher(Long publisherId);
+
+    <T, R> R notifySubscribers(T subscribe, Function<T, R> notifyFunc);
+
+    List<SubscribeDtoOut> getSubscribesOfSubscriber(Long subscriberId);
 }

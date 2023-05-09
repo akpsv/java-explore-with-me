@@ -2,54 +2,108 @@ package ru.akpsv.main.subscribe;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.akpsv.main.event.dto.EventShortDto;
-import ru.akpsv.main.event.service.PrivateEventService;
+import ru.akpsv.main.event.model.Event;
+import ru.akpsv.main.event.model.EventState;
+import ru.akpsv.main.event.repository.EventRepository;
+import ru.akpsv.main.subscribe.dto.SubscribeDtoIn;
 import ru.akpsv.main.subscribe.dto.SubscribeDtoOut;
 import ru.akpsv.main.subscribe.dto.SubscribeMapper;
 import ru.akpsv.main.subscribe.model.Subscribe;
-import ru.akpsv.main.subscribe.model.SubscribeId;
-import ru.akpsv.main.user.UserService;
-import ru.akpsv.main.user.dto.UserDto;
+import ru.akpsv.main.subscribe.repository.SubscribeRepository;
+import ru.akpsv.main.user.model.User;
+import ru.akpsv.main.user.repository.UserRepository;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class SubscribeServiceImpl implements SubscribeService {
-    private final SubscribeRepository repository;
-    private final PrivateEventService eventService;
-    private final UserService userService;
+    private final SubscribeRepository subscribeRepository;
+    private final EventRepository eventRepository;
+    private final UserRepository userRepository;
+    private final EmailService emailService;
 
+    /**
+     * Добавить подписку на пользователя
+     *
+     * @param subscribeDtoIn
+     * @return
+     */
     @Override
-    public SubscribeDtoOut addSubscriber(Long subscriberId, Long publisherId) {
-        Subscribe savedSubscribe = repository.save(
+    public SubscribeDtoOut addSubscribe(SubscribeDtoIn subscribeDtoIn) {
+        Subscribe savedSubscribe = subscribeRepository.save(
                 Subscribe.builder()
-                        .id(new SubscribeId(subscriberId, publisherId))
+                        .subscriberId(subscribeDtoIn.getSubscriberId())
+                        .publisherId(subscribeDtoIn.getPublisherId())
                         .build()
         );
-        Function<Subscribe, Boolean> notifyFunc = subscribe -> {
-            List<EventShortDto> publisherEvents = eventService.getEventsByUser(savedSubscribe.getId().getPublisherId(), null, null);
-            List<UserDto> subscribersByIds = userService.getUsersByIds(List.of(savedSubscribe.getId().getSubscriberId()), null, null);
-            return new EmailService().sendEmails(subscribersByIds, publisherEvents);
-        };
-        notifySubscribers(savedSubscribe, notifyFunc);
 
-        return SubscribeMapper.subscribeDtoOut(savedSubscribe);
+        Function<Subscribe, Boolean> notifyFunc = subscribe -> {
+            List<Event> publishedEventsOfPublisher = eventRepository.findByInitiatorIdAndState(
+                    savedSubscribe.getPublisherId(),
+                    EventState.PUBLISHED);
+
+            if (publishedEventsOfPublisher.size()==0){
+                return false;
+            }
+            User subscriber = userRepository.findById(subscribeDtoIn.getSubscriberId())
+                    .orElseThrow(() -> new NoSuchElementException("User with id=" + subscribeDtoIn.getSubscriberId() + "hot exist"));
+
+            emailService.sendEmails(subscriber, publishedEventsOfPublisher);
+            return true;
+        };
+
+        Boolean notifyResult = notifySubscribers(savedSubscribe, notifyFunc);
+
+        return SubscribeMapper.toSubscribeDtoOut(savedSubscribe);
     }
 
-//    protected Boolean notifySubscribers(Subscribe subscribe){
-//        List<EventShortDto> publisherEvents = eventService.getEventsByUser(subscribe.getId().getPublisherId(), null, null);
-//        List<UserDto> subscribersByIds = userService.getUsersByIds(List.of(subscribe.getId().getSubscriberId()), null, null);
-//        return new EmailService().sendEmails(subscribersByIds, publisherEvents);
-//    }
-
-    protected <T, R> R notifySubscribers(T subscribe, Function<T, R> notifyFunc) {
+    /**
+     * Уведомить подписчиков о событии
+     *
+     * @param subscribe  - подписка, содержащая идентификаторы подписчик и издателя
+     * @param notifyFunc - функция, которая реализует уведомление
+     * @param <T>        - подписка
+     * @param <R>        - возвращаемое значение типа Boolean
+     * @return - возвращет тип Boolean
+     */
+    public <T, R> R notifySubscribers(T subscribe, Function<T, R> notifyFunc) {
         return notifyFunc.apply(subscribe);
     }
 
+    /**
+     * Получить подписки в которых учствует подписчик
+     *
+     * @param subscriberId - идентификтор подписчик
+     * @return - вернуть список подписок
+     */
     @Override
-    public List<SubscribeDtoOut> getSubscribes(Long subscriberId) {
-        throw new UnsupportedOperationException("Метод не релизован");
+    public List<SubscribeDtoOut> getSubscribesOfSubscriber(Long subscriberId) {
+        return subscribeRepository.findBySubscriberId(subscriberId)
+                .stream()
+                .map(SubscribeMapper::toSubscribeDtoOut)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteSubscribe(Long subscribeId) {
+        subscribeRepository.deleteById(subscribeId);
+    }
+
+    /**
+     * Получить подписки в которых участвует конкретный издатель
+     *
+     * @param publisherId - идентификатор издателя
+     * @return - вернуть список подписок подписчиков подписанных на издателя
+     */
+    @Override
+    public List<SubscribeDtoOut> getSubscribesOfPublisher(Long publisherId) {
+        return subscribeRepository.findByPublisherId(publisherId)
+                .stream()
+                .map(SubscribeMapper::toSubscribeDtoOut)
+                .collect(Collectors.toList());
     }
 }

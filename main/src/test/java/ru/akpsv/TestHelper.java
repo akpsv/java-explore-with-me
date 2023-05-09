@@ -14,7 +14,6 @@ import ru.akpsv.main.event.model.Location;
 import ru.akpsv.main.request.model.Request;
 import ru.akpsv.main.request.model.RequestStatus;
 import ru.akpsv.main.subscribe.model.Subscribe;
-import ru.akpsv.main.subscribe.model.SubscribeId;
 import ru.akpsv.main.user.dto.NewUserRequest;
 import ru.akpsv.main.user.dto.UserDto;
 import ru.akpsv.main.user.dto.UserShortDto;
@@ -216,7 +215,9 @@ public class TestHelper {
 
     public static Subscribe createSubscribe() {
         return Subscribe.builder()
-                .id(new SubscribeId(1L,2L))
+                .subscribeId(1L)
+                .subscriberId(1L)
+                .publisherId(2L)
                 .build();
     }
 }
