@@ -147,6 +147,10 @@
 							"    pm.response.to.have.status(201);\r",
 							"    pm.response.to.be.withBody;\r",
 							"    pm.response.to.be.json;\r",
+							"    var jsonData = JSON.parse(responseBody);\r",
+							"    pm.collectionVariables.set(\r",
+							"        \"savedEventId\",\r",
+							"         jsonData.id);\r",
 							"});"
 						],
 						"type": "text/javascript"
@@ -158,7 +162,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"annotation\":\"Maiores architecto consectetur minima ut veniam quis nostrum. Excepturi rerum ut possimus. Et ut reiciendis. Similique consequatur pariatur accusamus quia. Ducimus a veniam.\",\r\n    \"category\":1,\r\n    \"description\":\"Enim delectus quibusdam expedita. Et necessitatibus neque quaerat perferendis. Voluptas minima impedit facere libero voluptate voluptas fugiat provident. Consequuntur aperiam recusandae.\\n \\rNulla rerum tempora suscipit necessitatibus. Vitae et dignissimos provident enim rem culpa magnam eius. Et eligendi eos voluptas deleniti quis molestiae praesentium magnam iusto. Laboriosam nesciunt id ut unde non quod ut aspernatur molestiae. Adipisci molestiae voluptates. Deserunt ut quia vel cumque id eaque.\\n \\rPariatur esse dignissimos velit. Asperiores similique dolor hic cupiditate ipsam. Itaque laborum explicabo ipsam cupiditate unde tempora occaecati. Et exercitationem numquam error. Incidunt molestiae sapiente maxime repellendus assumenda. Voluptatum velit voluptate.\",\r\n    \"eventDate\":\"2023-06-09 21:50:40\",\r\n    \"location\":{\r\n        \"lat\":-25.819,\r\n        \"lon\":25.2376\r\n        },\r\n    \"paid\":\"false\",\r\n    \"participantLimit\":\"548\",\r\n    \"requestModeration\":\"false\",\r\n    \"title\":\"Praesentium quia cumque veniam.\"\r\n}",
+					"raw": "{\r\n    \"annotation\": \"Maiores architecto consectetur minima ut veniam quis nostrum. Excepturi rerum ut possimus. Et ut reiciendis. Similique consequatur pariatur accusamus quia. Ducimus a veniam.\",\r\n    \"category\": 1,\r\n    \"description\": \"Enim delectus quibusdam expedita. Et necessitatibus neque quaerat perferendis. Voluptas minima impedit facere libero voluptate voluptas fugiat provident. Consequuntur aperiam recusandae.\\n \\rNulla rerum tempora suscipit necessitatibus. Vitae et dignissimos provident enim rem culpa magnam eius. Et eligendi eos voluptas deleniti quis molestiae praesentium magnam iusto. Laboriosam nesciunt id ut unde non quod ut aspernatur molestiae. Adipisci molestiae voluptates. Deserunt ut quia vel cumque id eaque.\\n \\rPariatur esse dignissimos velit. Asperiores similique dolor hic cupiditate ipsam. Itaque laborum explicabo ipsam cupiditate unde tempora occaecati. Et exercitationem numquam error. Incidunt molestiae sapiente maxime repellendus assumenda. Voluptatum velit voluptate.\",\r\n    \"eventDate\": \"2023-06-09 21:50:40\",\r\n    \"location\": {\r\n        \"lat\": -25.819,\r\n        \"lon\": 25.2376\r\n    },\r\n    \"paid\": \"false\",\r\n    \"participantLimit\": \"548\",\r\n    \"requestModeration\": \"false\",\r\n    \"title\": \"Praesentium quia cumque veniam.\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -272,7 +276,7 @@
 					"variable": [
 						{
 							"key": "eventId",
-							"value": "35"
+							"value": "{{savedEventId}}"
 						}
 					]
 				}
@@ -380,6 +384,10 @@
 			"key": "eid",
 			"value": "1",
 			"type": "string"
+		},
+		{
+			"key": "savedEventId",
+			"value": ""
 		}
 	]
 }
