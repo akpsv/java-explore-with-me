@@ -272,7 +272,7 @@
 					"variable": [
 						{
 							"key": "eventId",
-							"value": "{{eid}}"
+							"value": "35"
 						}
 					]
 				}
@@ -322,7 +322,7 @@
 							"pm.test(\"Ответ должен содержать код 204\",\r",
 							"function(){\r",
 							"    pm.response.to.have.status(204);\r",
-							"})"
+							"});"
 						],
 						"type": "text/javascript"
 					}
