@@ -15,6 +15,9 @@ import ru.akpsv.main.event.dto.UpdateEventAdminRequest;
 import ru.akpsv.main.event.model.Event;
 import ru.akpsv.main.event.model.EventState;
 import ru.akpsv.main.event.repository.EventRepository;
+import ru.akpsv.main.subscribe.EmailService;
+import ru.akpsv.main.subscribe.SubscribeService;
+import ru.akpsv.main.subscribe.repository.SubscribeRepository;
 import ru.akpsv.main.user.model.User;
 import ru.akpsv.main.user.repository.UserRepository;
 
@@ -27,12 +30,22 @@ import static org.hamcrest.Matchers.equalTo;
 class AdminEventServiceImplTest {
     @Mock
     EventRepository stubEventRepository;
+    @Mock
+    UserRepository stubUserRepository;
+    @Mock
+    SubscribeRepository stubSubscribeRepository;
+    @Mock
+    EmailService stubEmailService;
+    @Mock
+    SubscribeService stubSubscribeService;
+
+    //////////////
     @InjectMocks
     AdminEventServiceImpl adminEventService;
     @Mock
     CategoryRepository stubCategoryRepository;
-    @Mock
-    UserRepository stubUserRepository;
+//    @Mock
+//    UserRepository stubUserRepository;
 
     @InjectMocks
     EventMapper eventMapper;
@@ -42,8 +55,7 @@ class AdminEventServiceImplTest {
         //Подготовка
         UpdateEventAdminRequest requestWitnPublishEvent = TestHelper.createUpdateEventAdminRequestWitnPublishEvent();
         Event updatingEvent = TestHelper.createEvent(1L, 1L, 1L);
-//        EventRepository stubEventRepository = Mockito.mock(EventRepository.class);
-//        AdminEventServiceImpl adminEventService = new AdminEventServiceImpl(stubEventRepository);
+
 
         //Действия
         Event actualUpdatedEvent = adminEventService.checkAdminRequestAndFillUpdatingFilds(requestWitnPublishEvent, updatingEvent);      //Проверка
@@ -70,5 +82,25 @@ class AdminEventServiceImplTest {
         EventFullDto actualEventFullDto = adminEventService.updateEventByAdmin(updatingRequest, 1L);
         //Проверка
         assertThat(actualEventFullDto.getAnnotation(), equalTo(expectedChangedEvent.getAnnotation()));
+    }
+
+    @Test
+    void notifySubscribers_Event_NotifiedSubscribers() {
+        //Подготовка
+        Event event = TestHelper.createEvent(1L, 1L, 1L);
+//        SubscribeService stubSubscribeService = Mockito.mock(SubscribeService.class);
+        AdminEventServiceImpl adminEventServiceImpl = new AdminEventServiceImpl(
+                stubEventRepository,
+                stubUserRepository,
+                stubSubscribeRepository,
+                stubEmailService,
+                stubSubscribeService
+        );
+        //Действия
+        adminEventServiceImpl.notifySubscribers(event);
+
+        //Проверка
+        Mockito.verify(stubSubscribeService, Mockito.times(1))
+                .notifySubscribers(Mockito.any(), Mockito.any());
     }
 }

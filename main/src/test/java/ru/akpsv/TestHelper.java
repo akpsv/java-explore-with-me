@@ -13,6 +13,7 @@ import ru.akpsv.main.event.model.EventState;
 import ru.akpsv.main.event.model.Location;
 import ru.akpsv.main.request.model.Request;
 import ru.akpsv.main.request.model.RequestStatus;
+import ru.akpsv.main.subscribe.model.Subscribe;
 import ru.akpsv.main.user.dto.NewUserRequest;
 import ru.akpsv.main.user.dto.UserDto;
 import ru.akpsv.main.user.dto.UserShortDto;
@@ -209,6 +210,14 @@ public class TestHelper {
                 .app("main-mvc")
                 .uri("http://testserver/event/" + eventId)
                 .hits(7L)
+                .build();
+    }
+
+    public static Subscribe createSubscribe() {
+        return Subscribe.builder()
+                .subscribeId(1L)
+                .subscriberId(1L)
+                .publisherId(2L)
                 .build();
     }
 }

@@ -22,6 +22,27 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: sa
     password: sa
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: username
+    password: password
+    properties:
+      mail:
+        host: smtp.yandex.ru
+        port: 465
+        username: testewm@yandex.ru
+        password: jfsfxoktowkmuydr
+        properties:
+          mail:
+            protocol: smtps
+            smtp:
+              connectiontimeout: 5000
+              timeout: 3000
+              writetimeout: 5000
+              auth: true
+              ssl:
+                enable: true
 
 logging:
   level:
@@ -57,6 +78,24 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: postgres
+  mail:
+    host: smtp.yandex.ru
+    port: 465
+    username: testewm@yandex.ru
+    password: jfsfxoktowkmuydr
+    properties:
+      mail:
+        protocol: smtps
+        smtp:
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+          auth: true
+          ssl:
+            enable: true
+
+mail:
+  debug: true
 #datasource:
 #    url: jdbc:h2:file:./testdb/test-main-svc
 #    driver-class-name: org.h2.Driver
